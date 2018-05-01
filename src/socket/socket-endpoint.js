@@ -5,6 +5,8 @@ const webAuth = require('../web-auth.js');
 const MSGS = require('./socket-messages.js');
 const EVENTS = require('./socket-events.js');
 
+const defaultLoadLimit = 10;
+
 class SocketEndpoint {
 	constructor(port, dbao , config) {
 		this.clients = {};
@@ -21,12 +23,19 @@ class SocketEndpoint {
 			this.onMessage(socket, data);
 		}.bind(this));
 
-		socket.on(EVENTS.onLoadMessage, function(data) {
+		socket.on(EVENTS.onLoadMessages, function(data) {
 			this.onLoadMessage(socket, data);
 		}.bind(this));
 	}
 
 	//region StatusEmits
+	emit400(socket) {
+		console.log(`ERROR_400 id: ${socket.id}, ip: ${socket.handshake.address}`);
+
+		socket.emit(EVENTS.onError, MSGS.BadRequest);
+		socket.disconnect(true);
+	}
+
 	emit401(socket) {
 		console.log(`ERROR_401 id: ${socket.id}, ip: ${socket.handshake.address}`);
 
@@ -101,7 +110,21 @@ class SocketEndpoint {
 	}
 
 	onLoadMessage(socket, data) {
+		if (!data.hasOwnProperty('conversationId') || !data.hasOwnProperty('skip')) {
+			this.emit400(socket);
+			return;
+		}
 
+		data.userId = this.clients[socket.id].userId;
+		data.limit = data.hasOwnProperty('limit') ? data.limit : defaultLoadLimit;
+
+		this.dbao.loadMessages(data, function(err, result) {
+			if (err) {
+				socket.emit(EVENTS.onLoadMessages, MSGS.MessageLoadError);
+			} else {
+				socket.emit(EVENTS.onLoadMessages, result);
+			}
+		}.bind(this));
 	}
 	//endregion
 }

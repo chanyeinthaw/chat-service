@@ -32,6 +32,40 @@ class Dbao {
 			}
 		}.bind(this));
 	}
+
+	loadMessages(opts, callback) {
+		let loadMessageQuery =
+			'SELECT messages.*, superusers.id as superuser_id, superusers.name as superuser_name ' +
+			'FROM messages ' +
+			'INNER JOIN conversations ON messages.conversation_id = conversations.id ' +
+			'INNER JOIN superusers ON messages.superuser_id = superusers.id ' +
+			'WHERE conversations.user_id = ? AND messages.conversation_id = ? ' +
+			'ORDER BY messages.created_at DESC LIMIT ' + opts.limit + ' OFFSET ' + opts.skip;
+
+		this.conn.query(loadMessageQuery,
+			[opts.userId, opts.conversationId], (error, result, fields) => {
+			if (error) callback(error, null);
+			else {
+				for(let i = 0; i < result.length; i++) {
+					let oldResult = result[i];
+
+					oldResult.superuser = {
+						id: oldResult.superuser_id,
+						name: oldResult.superuser_name
+					};
+
+					delete oldResult.superuser_id;
+					delete oldResult.superuser_name;
+
+					result[i] = oldResult;
+				}
+
+				callback(null, {
+					messages: result
+				});
+			}
+		});
+	}
 }
 
 module.exports = Dbao;
