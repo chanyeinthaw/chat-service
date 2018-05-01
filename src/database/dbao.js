@@ -1,10 +1,47 @@
 const mysql = require('mysql');
 
+const MSGStatus = {
+	Unread: 0,
+	Pending: 1,
+	Read: 2
+};
+
 class Dbao {
 	constructor(config) {
 		this.conn = mysql.createConnection(config);
 
 		this.conn.connect();
+	}
+
+	addNewTextMessageRow(cid, ct, suid, callback) {
+		this.addNewMessageRow(cid, ct, '', '', MSGStatus.Unread ,suid, callback);
+	}
+
+	addNewImageMessageRow(cid, img, suid, callback) {
+		//this.addNewMessageRow(cid, '', img, '', suid, callback);
+	}
+
+	addNewFileMessageRow(cid, ct, suid, callback) {
+		//this.addNewMessageRow(cid, ct, '', '', suid, callback);
+	}
+
+	addNewMessageRow(cid, ct, img, doc, sent, suid, callback) {
+		let newMessageQuery =
+			'INSERT INTO messages SET ?';
+
+		let data = {
+			conversation_id: cid,
+			content: ct,
+			images: img,
+			docs: doc,
+			sent: sent,
+			superuser_id: suid
+		};
+
+		this.conn.query(newMessageQuery, data, function(error, result, fields) {
+			if (error) callback(error, null);
+			else callback(null, result);
+		});
 	}
 
 	loadUnreadMessagesForUser(userId, callback) {
