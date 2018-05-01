@@ -2,4 +2,4 @@ const SocketEndpoint = require('./src/socket/socket-endpoint.js');
 const Dbao = require('./src/database/dbao.js');
 const config = require('./config.js');
 
-new SocketEndpoint(6001, new Dbao(config.mysql), config.ioConfig);
+new SocketEndpoint(config.port, new Dbao(config.mysql), config.ioConfig);
