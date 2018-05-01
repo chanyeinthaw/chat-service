@@ -2,5 +2,9 @@ module.exports = {
 	onConnection: 'connection',
 	onDisconnect: 'disconnect',
 	onAuthenticate: 'onAuthenticate',
-	onError: 'onError'
+	onError: 'onError',
+
+	onMessage: 'onMessage',
+	onLoadUnreadMessages: 'onLoadUnreadMessages',
+	onLoadMessage: 'onLoadMessage'
 };
