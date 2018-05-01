@@ -14,9 +14,6 @@ class Dbao {
 			FROM conversations INNER JOIN messages on messages.conversation_id = conversations.id
 			WHERE messages.sent = 0 AND conversations.user_id = ?`;
 
-		let updateQuery =
-			`UPDATE messages SET sent = 2 WHERE id IN (?)`;
-
 		this.conn.query(query, [userId], function(error, result, fields) {
 			if (error) callback(error, null);
 			else {
@@ -27,6 +24,9 @@ class Dbao {
 				for(let i = 0; i < result.length; i++) {
 					idArray.push(result[i].id);
 				}
+
+				let updateQuery =
+					`UPDATE messages SET sent = 2 WHERE id IN (?)`;
 
 				this.conn.query(updateQuery, [idArray], (e,r,f) => {});
 			}
