@@ -6,7 +6,9 @@ const MSGS = require('./socket-messages.js');
 const EVENTS = require('./socket-events.js');
 
 class SocketEndpoint {
-	constructor(port, config) {
+	constructor(port, dbao , config) {
+		this.clients = {};
+		this.dbao = dbao;
 		this.config = config;
 		this.server = Io.listen(port);
 		console.log(`SERVER_STARTED port: ${port}`);
@@ -15,7 +17,13 @@ class SocketEndpoint {
 	}
 
 	registerEvents(socket) {
+		socket.on(EVENTS.onMessage, function(data) {
+			this.onMessage(socket, data);
+		}.bind(this));
 
+		socket.on(EVENTS.onLoadMessage, function(data) {
+			this.onLoadMessage(socket, data);
+		}.bind(this));
 	}
 
 	//region StatusEmits
@@ -72,14 +80,29 @@ class SocketEndpoint {
 		let res = webAuth(data.sessionId);
 
 		if (res.hasOwnProperty('success') && res.success === true) {
-			this.emit200(socket);
-			this.registerEvents(socket);
+			this.clients[socket.id] = { userId: res.userId };
+
+			this.dbao.loadUnreadMessagesForUser(res.userId, function(err, result) {
+				if (result) {
+					socket.emit(EVENTS.onLoadUnreadMessages, result);
+				}
+
+				this.emit200(socket);
+				this.registerEvents(socket);
+			}.bind(this));
 			return;
 		}
 
 		this.emit401(socket);
 	}
 
+	onMessage(socket, data) {
+
+	}
+
+	onLoadMessage(socket, data) {
+
+	}
 	//endregion
 }
 
