@@ -35,7 +35,9 @@ class Dbao {
 			images: img,
 			docs: doc,
 			sent: sent,
-			superuser_id: suid
+			superuser_id: suid,
+			created_at: new Date(),
+			updated_at: new Date(),
 		};
 
 		this.conn.query(newMessageQuery, data, function(error, result, fields) {

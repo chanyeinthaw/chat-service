@@ -116,19 +116,19 @@ class SocketEndpoint {
 		let suid = data.hasOwnProperty('superuserId') ? data.superuserId : null;
 
 		this.dbao.addNewTextMessageRow(data.conversationId, data.content, suid, function(err, result) {
-			let data =  {
+			let emitData =  {
 				timestamp: data.timestamp,
 				success: true
 			};
 
 			if (err) {
-				data.success = false;
+				emitData.success = false;
 			} else {
 				if (result.affectedRows <= 0)
-					data.success = false;
+					emitData.success = false;
 			}
 
-			socket.emit(EVENTS.onMessageSend, data);
+			socket.emit(EVENTS.onMessageSend, emitData);
 
 			console.log(`CLIENT_MSG_SENT id: ${socket.id}, ip: ${socket.handshake.address}`);
 		});
