@@ -4,7 +4,7 @@ module.exports = {
 	onAuthenticate: 'onAuthenticate',
 	onError: 'onError',
 
-	onMessage: 'onMessage',
+	onMessageSend: 'onMessageSend',
 	onLoadUnreadMessages: 'onLoadUnreadMessages',
 	onLoadMessages: 'onLoadMessages'
 };
