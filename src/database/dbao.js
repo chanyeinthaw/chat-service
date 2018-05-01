@@ -14,7 +14,7 @@ class Dbao {
 	}
 
 	addNewTextMessageRow(cid, ct, suid, callback) {
-		this.addNewMessageRow(cid, ct, '', '', MSGStatus.Unread ,suid, callback);
+		this.addNewMessageRow(cid, ct, '', '', MSGStatus.Read ,suid, callback);
 	}
 
 	addNewImageMessageRow(cid, img, suid, callback) {
@@ -49,7 +49,7 @@ class Dbao {
 			`SELECT messages.id, messages.conversation_id as conversationId, conversations.title,
 			messages.content, messages.images, messages.docs, messages.superuser_id as superuserId
 			FROM conversations INNER JOIN messages on messages.conversation_id = conversations.id
-			WHERE messages.sent = 0 AND conversations.user_id = ?`;
+			WHERE messages.sent = 0 AND conversations.user_id = ? AND messages.superuser_id IS NOT NULL`;
 
 		this.conn.query(query, [userId], function(error, result, fields) {
 			if (error) callback(error, null);
