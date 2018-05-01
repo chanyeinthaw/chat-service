@@ -19,12 +19,12 @@ class SocketEndpoint {
 	}
 
 	registerEvents(socket) {
-		socket.on(EVENTS.onMessage, function(data) {
-			this.onMessage(socket, data);
+		socket.on(EVENTS.onMessageSend, function(data) {
+			this.onMessageSend(socket, data);
 		}.bind(this));
 
 		socket.on(EVENTS.onLoadMessages, function(data) {
-			this.onLoadMessage(socket, data);
+			this.onLoadMessages(socket, data);
 		}.bind(this));
 	}
 
@@ -93,6 +93,8 @@ class SocketEndpoint {
 
 			this.dbao.loadUnreadMessagesForUser(res.userId, function(err, result) {
 				if (result) {
+					console.log(`CLIENT_LOAD_UNREAD id: ${socket.id}, ip: ${socket.handshake.address}`);
+
 					socket.emit(EVENTS.onLoadUnreadMessages, result);
 				}
 
@@ -105,11 +107,34 @@ class SocketEndpoint {
 		this.emit401(socket);
 	}
 
-	onMessage(socket, data) {
+	onMessageSend(socket, data) {
+		if (!data.hasOwnProperty('conversationId') || !data.hasOwnProperty('content') || !data.hasOwnProperty('timestamp')) {
+			this.emit400(socket);
+			return;
+		}
 
+		let suid = data.hasOwnProperty('superuserId') ? data.superuserId : null;
+
+		this.dbao.addNewTextMessageRow(data.conversationId, data.content, suid, function(err, result) {
+			let data =  {
+				timestamp: data.timestamp,
+				success: true
+			};
+
+			if (err) {
+				data.success = false;
+			} else {
+				if (result.affectedRows <= 0)
+					data.success = false;
+			}
+
+			socket.emit(EVENTS.onMessageSend, data);
+
+			console.log(`CLIENT_MSG_SENT id: ${socket.id}, ip: ${socket.handshake.address}`);
+		});
 	}
 
-	onLoadMessage(socket, data) {
+	onLoadMessages(socket, data) {
 		if (!data.hasOwnProperty('conversationId') || !data.hasOwnProperty('skip')) {
 			this.emit400(socket);
 			return;
@@ -119,6 +144,8 @@ class SocketEndpoint {
 		data.limit = data.hasOwnProperty('limit') ? data.limit : defaultLoadLimit;
 
 		this.dbao.loadMessages(data, function(err, result) {
+			console.log(`CLIENT_LOAD_MSG id: ${socket.id}, ip: ${socket.handshake.address}`);
+
 			if (err) {
 				socket.emit(EVENTS.onLoadMessages, MSGS.MessageLoadError);
 			} else {
