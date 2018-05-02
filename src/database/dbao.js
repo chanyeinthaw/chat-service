@@ -51,35 +51,47 @@ class Dbao {
 		});
 	}
 
-	loadUnreadMessagesForUser(userId, callback) {
+	loadConversationsForUser(userId, callback) {
+		let query = 'SELECT * FROM conversations WHERE user_id = ?';
+
+		this.conn.query(query, [userId], function(e, r, f) {
+			if (e) callback(e, null);
+			else callback(null, r);
+		});
+	}
+
+	loadUnreadMessageForUser(userId, callback) {
 		let query =
 			`SELECT messages.*,conversations.title as conversationTitle,superusers.id as superuser_id, superusers.name as superuser_name 
 			FROM conversations INNER JOIN messages on messages.conversation_id = conversations.id INNER JOIN superusers on messages.superuser_id = superusers.id
-			WHERE messages.sent = 0 AND conversations.user_id = ? AND messages.superuser_id IS NOT NULL`;
+			WHERE messages.sent = 0 AND conversations.user_id = ? AND messages.superuser_id IS NOT NULL ORDER BY messages.created_at DESC`;
 
 		this.conn.query(query, [userId], function(error, result, fields) {
 			if (error) callback(error, null);
 			else {
 				let idArray = [];
+				let retResults = [];
 
 				for(let i = 0; i < result.length; i++) {
-					let oldResult = result[i];
+					if (i === 1) {
+						let oldResult = result[i];
 
-					oldResult.superuser = {
-						id: oldResult.superuser_id,
-						name: oldResult.superuser_name
-					};
+						oldResult.superuser = {
+							id: oldResult.superuser_id,
+							name: oldResult.superuser_name
+						};
 
-					delete oldResult.superuser_id;
-					delete oldResult.superuser_name;
+						delete oldResult.superuser_id;
+						delete oldResult.superuser_name;
 
-					result[i] = oldResult;
+						retResults.push(oldResult);
+					}
 
 					idArray.push(oldResult.id);
 				}
 
 				callback(null, {
-					messages: result
+					messages: retResults
 				});
 
 				let updateQuery =
