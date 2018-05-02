@@ -82,6 +82,7 @@ class SocketEndpoint {
 	}
 
 	onAuthenticate(data) {
+		//region auth section
 		if (!data.hasOwnProperty('socketId')) {
 			return;
 		}
@@ -99,7 +100,9 @@ class SocketEndpoint {
 			this.emit200(socket);
 			return;
 		}
+		//endregion
 
+		//region web auth sub-section
 		if (data.hasOwnProperty('accessKey') && this.config.accessKey === data.accessKey) {
 			client.isAuthorized = true;
 
@@ -111,6 +114,7 @@ class SocketEndpoint {
 			this.emit401(socket);
 			return;
 		}
+		//endregion
 
 		let res = webAuth(data.sessionId);
 
@@ -118,15 +122,30 @@ class SocketEndpoint {
 			client.userId = res.userId;
 			client.isAuthorized = true;
 
-			this.dbao.loadUnreadMessagesForUser(res.userId, function(err, result) {
+			let loadUnreadMessageForUser = (inst) => {
+				inst.dbao.loadUnreadMessageForUser(res.userId, function(err, result) {
+					if (result) {
+						console.log(`CLIENT_LOAD_UNREAD id: ${socket.id}, ip: ${socket.handshake.address}`);
+
+						socket.emit(EVENTS.onLoadUnreadMessages, result);
+					}
+
+					inst.emit200(socket);
+				});
+			};
+
+			this.dbao.loadConversationsForUser(res.userId, function(err, result) {
 				if (result) {
-					console.log(`CLIENT_LOAD_UNREAD id: ${socket.id}, ip: ${socket.handshake.address}`);
+					for(let i in result) {
+						if (result.hasOwnProperty(i))
+							socket.join(`channel${result[i].id}`);
+					}
 
-					socket.emit(EVENTS.onLoadUnreadMessages, result);
+					loadUnreadMessageForUser(this);
 				}
-
-				this.emit200(socket);
 			}.bind(this));
+
+
 			return;
 		}
 
