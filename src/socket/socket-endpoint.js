@@ -175,8 +175,9 @@ class SocketEndpoint {
 		}
 
 		let suid = data.hasOwnProperty('superuserId') ? data.superuserId : null;
+		let sent = suid === null ? 2 : 0;
 
-		this.dbao.addNewTextMessageRow(data.conversationId, data.content, suid, function(err, result) {
+		this.dbao.addNewTextMessageRow(data.conversationId, data.content, suid, sent, function(err, result) {
 			let emitData =  {
 				timestamp: data.timestamp,
 				success: true
