@@ -89,6 +89,11 @@ class SocketEndpoint {
 		let client = this.clients[data.socketId];
 		let socket = client.socket;
 
+		if (client.isAuthorized === true) {
+			this.emit200(socket);
+			return;
+		}
+
 		console.log(`CLIENT_AUTH_ATTEMPT id: ${socket.id}, ip: ${socket.handshake.address}`);
 
 		if (data.hasOwnProperty('accessKey') && this.config.accessKey === data.accessKey) {
@@ -181,7 +186,7 @@ class SocketEndpoint {
 			return;
 		}
 
-		data.userId = this.clients[socket.id].userId;
+		data.userId = client.userId;
 		data.limit = data.hasOwnProperty('limit') ? data.limit : defaultLoadLimit;
 
 		this.dbao.loadMessages(data, function(err, result) {
