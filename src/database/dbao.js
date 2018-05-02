@@ -13,8 +13,8 @@ class Dbao {
 		this.conn.connect();
 	}
 
-	addNewTextMessageRow(cid, ct, suid, callback) {
-		this.addNewMessageRow(cid, ct, '', '', MSGStatus.Read ,suid, callback);
+	addNewTextMessageRow(cid, ct, suid, sent, callback) {
+		this.addNewMessageRow(cid, ct, '', '', sent ,suid, callback);
 	}
 
 	addNewImageMessageRow(cid, img, suid, callback) {
