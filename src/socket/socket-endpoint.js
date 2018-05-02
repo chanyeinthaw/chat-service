@@ -132,7 +132,7 @@ class SocketEndpoint {
 		let client = this.clients[data.socketId];
 		let socket = client.socket;
 
-		if (socket.isAuthorized === false) {
+		if (client.isAuthorized === false) {
 			this.emit401(socket);
 			return;
 		}
@@ -171,7 +171,7 @@ class SocketEndpoint {
 		let client = this.clients[data.socketId];
 		let socket = client.socket;
 
-		if (socket.isAuthorized === false) {
+		if (client.isAuthorized === false) {
 			this.emit401(socket);
 			return;
 		}
