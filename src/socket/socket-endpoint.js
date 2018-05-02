@@ -138,6 +138,10 @@ class SocketEndpoint {
 			return;
 		}
 
+		if (!this.clients.hasOwnProperty(data.socketId)) {
+			return;
+		}
+
 		let client = this.clients[data.socketId];
 		let socket = client.socket;
 
@@ -174,6 +178,10 @@ class SocketEndpoint {
 
 	onLoadMessages(data) {
 		if (!data.hasOwnProperty('socketId')) {
+			return;
+		}
+
+		if (!this.clients.hasOwnProperty(data.socketId)) {
 			return;
 		}
 
