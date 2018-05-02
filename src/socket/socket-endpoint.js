@@ -170,10 +170,13 @@ class SocketEndpoint {
 					emitData.success = false;
 			}
 
+			delete result.affectedRows;
+
 			socket.emit(EVENTS.onMessageSend, emitData);
+			this.server.sockets.emit(EVENTS.onMessageReceived, result);
 
 			console.log(`CLIENT_MSG_SENT id: ${socket.id}, ip: ${socket.handshake.address}`);
-		});
+		}.bind(this));
 	}
 
 	onLoadMessages(data) {

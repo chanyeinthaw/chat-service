@@ -42,7 +42,12 @@ class Dbao {
 
 		this.conn.query(newMessageQuery, data, function(error, result, fields) {
 			if (error) callback(error, null);
-			else callback(null, result);
+			else {
+				data.id = result.insertId;
+				data.affectedRows = result.affectedRows;
+
+				callback(null, data);
+			}
 		});
 	}
 

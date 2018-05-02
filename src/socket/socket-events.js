@@ -6,5 +6,7 @@ module.exports = {
 
 	onMessageSend: 'onMessageSend',
 	onLoadUnreadMessages: 'onLoadUnreadMessages',
-	onLoadMessages: 'onLoadMessages'
+	onLoadMessages: 'onLoadMessages',
+
+	onMessageReceived: 'onMessageReceive'
 };
