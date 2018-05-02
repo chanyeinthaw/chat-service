@@ -192,7 +192,7 @@ class SocketEndpoint {
 			delete result.affectedRows;
 
 			socket.emit(EVENTS.onMessageSend, emitData);
-			this.server.sockets.emit(EVENTS.onMessageReceived, result);
+			socket.to(`channel${result.conversation_id}`).emit(EVENTS.onMessageReceived, result);
 
 			console.log(`CLIENT_MSG_SENT id: ${socket.id}, ip: ${socket.handshake.address}`);
 		}.bind(this));
