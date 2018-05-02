@@ -103,7 +103,7 @@ class Dbao {
 
 	loadMessages(opts, callback) {
 		let loadMessageQuery =
-			'SELECT messages.*, superusers.id as superuser_id, superusers.name as superuser_name ' +
+			'SELECT messages.*, messages.superuser_id as msuid, superusers.name as ssuname ' +
 			'FROM messages ' +
 			'INNER JOIN conversations ON messages.conversation_id = conversations.id ' +
 			'INNER JOIN superusers ON messages.superuser_id = superusers.id ' +
@@ -117,13 +117,17 @@ class Dbao {
 				for(let i = 0; i < result.length; i++) {
 					let oldResult = result[i];
 
-					oldResult.superuser = {
-						id: oldResult.superuser_id,
-						name: oldResult.superuser_name
-					};
+					if (oldResult.msuid === null) {
+						oldResult.superuser = null;
+					} else {
+						oldResult.superuser = {
+							id: oldResult.msuid,
+							name: oldResult.ssuname
+						};
+					}
 
-					delete oldResult.superuser_id;
-					delete oldResult.superuser_name;
+					delete oldResult.msuid;
+					delete oldResult.ssuname;
 
 					result[i] = oldResult;
 				}
