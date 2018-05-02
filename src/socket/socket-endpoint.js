@@ -88,6 +88,10 @@ class SocketEndpoint {
 
 		console.log(`CLIENT_AUTH_ATTEMPT id: ${data.socketId}`);
 
+		if (!this.clients.hasOwnProperty(data.socketId)) {
+			return;
+		}
+
 		let client = this.clients[data.socketId];
 		let socket = client.socket;
 
