@@ -237,7 +237,7 @@ class SocketEndpoint {
 		}.bind(this));
 	}
 
-	onNewConversatoin(data) {
+	onNewConversation(data) {
 		if (!data.hasOwnProperty('socketId')) {
 			return;
 		}

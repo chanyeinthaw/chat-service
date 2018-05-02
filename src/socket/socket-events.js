@@ -8,5 +8,7 @@ module.exports = {
 	onLoadUnreadMessages: 'onLoadUnreadMessages',
 	onLoadMessages: 'onLoadMessages',
 
-	onMessageReceived: 'onMessageReceive'
+	onMessageReceived: 'onMessageReceive',
+
+	onNewConversation: 'onNewConversation'
 };
