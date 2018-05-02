@@ -106,7 +106,7 @@ class Dbao {
 			'SELECT messages.*, messages.superuser_id as msuid, superusers.name as ssuname ' +
 			'FROM messages ' +
 			'INNER JOIN conversations ON messages.conversation_id = conversations.id ' +
-			'INNER JOIN superusers ON messages.superuser_id = superusers.id ' +
+			'RIGHT JOIN superusers ON messages.superuser_id = superusers.id ' +
 			'WHERE conversations.user_id = ? AND messages.conversation_id = ? ' +
 			'ORDER BY messages.created_at DESC LIMIT ' + opts.limit + ' OFFSET ' + opts.skip;
 
