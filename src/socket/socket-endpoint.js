@@ -22,6 +22,8 @@ class SocketEndpoint {
 		socket.on(EVENTS.onMessageSend, this.onMessageSend.bind(this));
 
 		socket.on(EVENTS.onLoadMessages, this.onLoadMessages.bind(this));
+
+		socket.on(EVENTS.onNewConveration, this.onNewConversatoin.bind(this));
 	}
 
 	//region StatusEmits
@@ -233,6 +235,34 @@ class SocketEndpoint {
 				socket.emit(EVENTS.onLoadMessages, result);
 			}
 		}.bind(this));
+	}
+
+	onNewConversatoin(data) {
+		if (!data.hasOwnProperty('socketId')) {
+			return;
+		}
+
+		if (!this.clients.hasOwnProperty(data.socketId)) {
+			return;
+		}
+
+		let client = this.clients[data.socketId];
+		let socket = client.socket;
+
+		if (client.isAuthorized === false) {
+			this.emit401(socket);
+			return;
+		}
+
+		let returnObj = {success: false};
+
+		if (data.hasOwnProperty('conversationId')) {
+			socket.join(`channel${data.conversationId}`);
+
+			returnObj.success = true;
+		}
+
+		socket.emit(EVENTS.onNewConversation, returnObj);
 	}
 	//endregion
 }
