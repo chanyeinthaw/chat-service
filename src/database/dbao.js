@@ -48,21 +48,34 @@ class Dbao {
 
 	loadUnreadMessagesForUser(userId, callback) {
 		let query =
-			`SELECT messages.id, messages.conversation_id as conversationId, conversations.title,
-			messages.content, messages.images, messages.docs, messages.superuser_id as superuserId
-			FROM conversations INNER JOIN messages on messages.conversation_id = conversations.id
+			`SELECT messages.*,conversations.title as conversationTitle,superusers.id as superuser_id, superusers.name as superuser_name 
+			FROM conversations INNER JOIN messages on messages.conversation_id = conversations.id INNER JOIN superusers on messages.superuser_id = superusers.id
 			WHERE messages.sent = 0 AND conversations.user_id = ? AND messages.superuser_id IS NOT NULL`;
 
 		this.conn.query(query, [userId], function(error, result, fields) {
 			if (error) callback(error, null);
 			else {
-				callback(null, result);
-
 				let idArray = [];
 
 				for(let i = 0; i < result.length; i++) {
-					idArray.push(result[i].id);
+					let oldResult = result[i];
+
+					oldResult.superuser = {
+						id: oldResult.superuser_id,
+						name: oldResult.superuser_name
+					};
+
+					delete oldResult.superuser_id;
+					delete oldResult.superuser_name;
+
+					result[i] = oldResult;
+
+					idArray.push(oldResult.id);
 				}
+
+				callback(null, {
+					messages: result
+				});
 
 				let updateQuery =
 					`UPDATE messages SET sent = 2 WHERE id IN (?)`;
