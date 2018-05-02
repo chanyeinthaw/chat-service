@@ -19,13 +19,9 @@ class SocketEndpoint {
 	}
 
 	registerEvents(socket) {
-		socket.on(EVENTS.onMessageSend, function(data) {
-			this.onMessageSend(socket, data);
-		}.bind(this));
+		socket.on(EVENTS.onMessageSend, this.onMessageSend.bind(this));
 
-		socket.on(EVENTS.onLoadMessages, function(data) {
-			this.onLoadMessages(socket, data);
-		}.bind(this));
+		socket.on(EVENTS.onLoadMessages, this.onLoadMessages.bind(this));
 	}
 
 	//region StatusEmits
@@ -52,7 +48,11 @@ class SocketEndpoint {
 	emitAuthRequest(socket) {
 		console.log(`REQUESt_AUTH id: ${socket.id}, ip: ${socket.handshake.address}`);
 
-		socket.emit(EVENTS.onAuthenticate, MSGS.AuthRequest);
+		let data = Object.assign({}, MSGS.AuthRequest);
+
+		data.socketId = socket.id;
+
+		socket.emit(EVENTS.onAuthenticate, data);
 	}
 	//endregion
 
@@ -60,19 +60,30 @@ class SocketEndpoint {
 	onConnection(socket) {
 		console.log(`CLIENT_CONNECTED id: ${socket.id}, ip: ${socket.handshake.address}`);
 
+		this.clients[socket.id] = {
+			userId: null,
+			socketId: socket.id,
+			socket: socket,
+			isAuthorized: false
+		};
+
 		this.emitAuthRequest(socket);
 
-		socket.on(EVENTS.onAuthenticate, function(data) {
-			this.onAuthenticate(socket,data)
-		}.bind(this));
+		socket.on(EVENTS.onAuthenticate, this.onAuthenticate.bind(this));
 
 		socket.on(EVENTS.onDisconnect, () => {
 			console.log(`CLIENT_DISCONNECTED id:${socket.id}, ip: ${socket.handshake.address}`);
-
 		});
 	}
 
-	onAuthenticate(socket, data) {
+	onAuthenticate(data) {
+		if (!data.hasOwnProperty('socketId')) {
+			return;
+		}
+
+		let client = this.clients[data.socketId];
+		let socket = client.socket;
+
 		console.log(`CLIENT_AUTH_ATTEMPT id: ${socket.id}, ip: ${socket.handshake.address}`);
 
 		if (data.hasOwnProperty('accessKey') && this.config.accessKey === data.accessKey) {
@@ -89,7 +100,8 @@ class SocketEndpoint {
 		let res = webAuth(data.sessionId);
 
 		if (res.hasOwnProperty('success') && res.success === true) {
-			this.clients[socket.id] = { userId: res.userId };
+			client.userId = res.userId;
+			client.isAuthorized = true;
 
 			this.dbao.loadUnreadMessagesForUser(res.userId, function(err, result) {
 				if (result) {
@@ -107,7 +119,19 @@ class SocketEndpoint {
 		this.emit401(socket);
 	}
 
-	onMessageSend(socket, data) {
+	onMessageSend(data) {
+		if (!data.hasOwnProperty('socketId')) {
+			return;
+		}
+
+		let client = this.clients[data.socketId];
+		let socket = client.socket;
+
+		if (socket.isAuthorized === false) {
+			this.emit401(socket);
+			return;
+		}
+
 		if (!data.hasOwnProperty('conversationId') || !data.hasOwnProperty('content') || !data.hasOwnProperty('timestamp')) {
 			this.emit400(socket);
 			return;
@@ -134,7 +158,19 @@ class SocketEndpoint {
 		});
 	}
 
-	onLoadMessages(socket, data) {
+	onLoadMessages(data) {
+		if (!data.hasOwnProperty('socketId')) {
+			return;
+		}
+
+		let client = this.clients[data.socketId];
+		let socket = client.socket;
+
+		if (socket.isAuthorized === false) {
+			this.emit401(socket);
+			return;
+		}
+
 		if (!data.hasOwnProperty('conversationId') || !data.hasOwnProperty('skip')) {
 			this.emit400(socket);
 			return;
