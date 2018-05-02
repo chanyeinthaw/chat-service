@@ -73,9 +73,8 @@ class Dbao {
 				let retResults = [];
 
 				for(let i = 0; i < result.length; i++) {
+					let oldResult = result[i];
 					if (i === 1) {
-						let oldResult = result[i];
-
 						oldResult.superuser = {
 							id: oldResult.superuser_id,
 							name: oldResult.superuser_name
