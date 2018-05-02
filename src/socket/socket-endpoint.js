@@ -23,7 +23,7 @@ class SocketEndpoint {
 
 		socket.on(EVENTS.onLoadMessages, this.onLoadMessages.bind(this));
 
-		socket.on(EVENTS.onNewConveration, this.onNewConversatoin.bind(this));
+		socket.on(EVENTS.onNewConveration, this.onNewConversation.bind(this));
 	}
 
 	//region StatusEmits
