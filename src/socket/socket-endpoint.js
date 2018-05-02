@@ -86,6 +86,8 @@ class SocketEndpoint {
 			return;
 		}
 
+		console.log(`CLIENT_AUTH_ATTEMPT id: ${data.socketId}`);
+
 		let client = this.clients[data.socketId];
 		let socket = client.socket;
 
@@ -93,8 +95,6 @@ class SocketEndpoint {
 			this.emit200(socket);
 			return;
 		}
-
-		console.log(`CLIENT_AUTH_ATTEMPT id: ${socket.id}, ip: ${socket.handshake.address}`);
 
 		if (data.hasOwnProperty('accessKey') && this.config.accessKey === data.accessKey) {
 			client.isAuthorized = true;
