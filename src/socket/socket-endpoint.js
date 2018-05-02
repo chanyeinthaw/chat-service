@@ -30,6 +30,8 @@ class SocketEndpoint {
 
 		socket.emit(EVENTS.onError, MSGS.BadRequest);
 		socket.disconnect(true);
+
+		delete this.clients[socket.id];
 	}
 
 	emit401(socket) {
@@ -37,6 +39,8 @@ class SocketEndpoint {
 
 		socket.emit(EVENTS.onError, MSGS.AuthError);
 		socket.disconnect(true);
+
+		delete this.clients[socket.id];
 	}
 
 	emit200(socket) {
@@ -67,6 +71,7 @@ class SocketEndpoint {
 			isAuthorized: false
 		};
 
+		this.registerEvents(socket);
 		this.emitAuthRequest(socket);
 
 		socket.on(EVENTS.onAuthenticate, this.onAuthenticate.bind(this));
@@ -90,7 +95,6 @@ class SocketEndpoint {
 			client.isAuthorized = true;
 
 			this.emit200(socket);
-			this.registerEvents(socket);
 			return;
 		}
 
@@ -113,7 +117,6 @@ class SocketEndpoint {
 				}
 
 				this.emit200(socket);
-				this.registerEvents(socket);
 			}.bind(this));
 			return;
 		}
