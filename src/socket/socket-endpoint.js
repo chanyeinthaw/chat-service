@@ -196,18 +196,21 @@ class SocketEndpoint {
 					emitData.success = false;
 			}
 
-			delete result.affectedRows;
+			if (emitData.success)
+				delete result.affectedRows;
 
 			socket.emit(EVENTS.onMessageSend, emitData);
 
-			if (client.isSuperuser) {
-				this.server.in(`channel${result.conversation_id}`).emit(EVENTS.onMessageReceived, {
-					messages: [result]
-				});
-			} else {
-				socket.to(`channel${result.conversation_id}`).emit(EVENTS.onMessageReceived, {
-					messages: [result]
-				});
+			if (emitData.success) {
+				if (client.isSuperuser) {
+					this.server.in(`channel${result.conversation_id}`).emit(EVENTS.onMessageReceived, {
+						messages: [result]
+					});
+				} else {
+					socket.to(`channel${result.conversation_id}`).emit(EVENTS.onMessageReceived, {
+						messages: [result]
+					});
+				}
 			}
 
 			console.log(`CLIENT_MSG_SENT id: ${socket.id}, ip: ${socket.handshake.address}`);
