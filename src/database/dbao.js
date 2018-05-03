@@ -62,7 +62,7 @@ class Dbao {
 
 	loadUnreadMessageForUser(userId, callback) {
 		let query =
-			`SELECT messages.*,conversations.title as conversationTitle,superusers.id as superuser_id, superusers.name as superuser_name 
+			`SELECT messages.*,conversations.title as conversationTitle, superusers.name as superuser_name 
 			FROM conversations INNER JOIN messages on messages.conversation_id = conversations.id INNER JOIN superusers on messages.superuser_id = superusers.id
 			WHERE messages.sent = 0 AND conversations.user_id = ? AND messages.superuser_id IS NOT NULL ORDER BY messages.created_at DESC`;
 
@@ -80,7 +80,6 @@ class Dbao {
 							name: oldResult.superuser_name
 						};
 
-						delete oldResult.superuser_id;
 						delete oldResult.superuser_name;
 
 						retResults.push(oldResult);
