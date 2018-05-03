@@ -70,26 +70,22 @@ class Dbao {
 			if (error) callback(error, null);
 			else {
 				let idArray = [];
-				let retResults = [];
 
 				for(let i = 0; i < result.length; i++) {
 					let oldResult = result[i];
-					if (i === 1) {
-						oldResult.superuser = {
-							id: oldResult.superuser_id,
-							name: oldResult.superuser_name
-						};
+					oldResult.superuser = {
+						id: oldResult.superuser_id,
+						name: oldResult.superuser_name
+					};
 
-						delete oldResult.superuser_name;
+					delete oldResult.superuser_name;
 
-						retResults.push(oldResult);
-					}
-
+					result[i] = oldResult;
 					idArray.push(oldResult.id);
 				}
 
 				callback(null, {
-					messages: retResults
+					messages: result
 				});
 
 				let updateQuery =
