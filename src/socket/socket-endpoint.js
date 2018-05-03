@@ -199,7 +199,9 @@ class SocketEndpoint {
 			delete result.affectedRows;
 
 			socket.emit(EVENTS.onMessageSend, emitData);
-			socket.to(`channel${result.conversation_id}`).emit(EVENTS.onMessageReceived, result);
+			socket.to(`channel${result.conversation_id}`).emit(EVENTS.onMessageReceived, {
+				message: [result]
+			});
 
 			console.log(`CLIENT_MSG_SENT id: ${socket.id}, ip: ${socket.handshake.address}`);
 		}.bind(this));
@@ -296,6 +298,8 @@ class SocketEndpoint {
 		} else {
 			socket.leave(`channel${data.channelId}`);
 		}
+
+		socket.emit(EVENTS.onLoadUnloadConversation, { success: true });
 	}
 	//endregion
 }
