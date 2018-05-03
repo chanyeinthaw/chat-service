@@ -69,8 +69,6 @@ class Dbao {
 		this.conn.query(query, [userId], function(error, result, fields) {
 			if (error) callback(error, null);
 			else {
-				let idArray = [];
-
 				for(let i = 0; i < result.length; i++) {
 					let oldResult = result[i];
 					oldResult.superuser = {
@@ -81,19 +79,23 @@ class Dbao {
 					delete oldResult.superuser_name;
 
 					result[i] = oldResult;
-					idArray.push(oldResult.id);
 				}
 
 				callback(null, {
 					messages: result
 				});
-
-				let updateQuery =
-					`UPDATE messages SET sent = 2 WHERE id IN (?)`;
-
-				this.conn.query(updateQuery, [idArray], (e,r,f) => {});
 			}
 		}.bind(this));
+	}
+
+	updateMessageSentStatus(idArray, callback) {
+		let updateQuery =
+			`UPDATE messages SET sent = 2 WHERE id IN (?)`;
+
+		this.conn.query(updateQuery, [idArray], (e,r,f) => {
+			if (er) callback(err, null);
+			else callback(null, r);
+		});
 	}
 
 	loadMessages(opts, callback) {

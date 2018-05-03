@@ -26,6 +26,8 @@ class SocketEndpoint {
 		socket.on(EVENTS.onNewConversation, this.onNewConversation.bind(this));
 
 		socket.on(EVENTS.onLoadUnloadConversation, this.onLoadUnloadConversation.bind(this));
+
+		socket.on(EVENTS.onUpdateMessageSentStatus, this.onUpdateMessageSentStatus.bind(this))
 	}
 
 	//region StatusEmits
@@ -312,6 +314,38 @@ class SocketEndpoint {
 		}
 
 		socket.emit(EVENTS.onLoadUnloadConversation, { channelId: data.channelId, success: true });
+	}
+
+	onUpdateMessageSentStatus(data) {
+		if (!data.hasOwnProperty('socketId')) {
+			return;
+		}
+
+		if (!this.clients.hasOwnProperty(data.socketId)) {
+			return;
+		}
+
+		let client = this.clients[data.socketId];
+		let socket = client.socket;
+
+		if (client.isAuthorized === false) {
+			this.emit401(socket);
+			return;
+		}
+
+		if (!data.hasOwnProperty('idArray')) {
+			this.emit400(socket);
+			return;
+		}
+
+		this.dbao.updateMessageSentStatus(data.idArray, function(err, result) {
+			let retObj = {success: false};
+			if (result && result.affectedRows > 0) {
+				retObj.success = true;
+			}
+
+			socket.emit(EVENTS.onUpdateMessageSentStatus, retObj);
+		}.bind(this));
 	}
 	//endregion
 }
