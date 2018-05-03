@@ -23,7 +23,9 @@ class SocketEndpoint {
 
 		socket.on(EVENTS.onLoadMessages, this.onLoadMessages.bind(this));
 
-		socket.on(EVENTS.onNewConveration, this.onNewConversation.bind(this));
+		socket.on(EVENTS.onNewConversation, this.onNewConversation.bind(this));
+
+		socket.on(EVENTS.onLoadUnloadConversation, this.onLoadUnloadConversation.bind(this));
 	}
 
 	//region StatusEmits
@@ -107,6 +109,7 @@ class SocketEndpoint {
 		//region web auth sub-section
 		if (data.hasOwnProperty('accessKey') && this.config.accessKey === data.accessKey) {
 			client.isAuthorized = true;
+			client.isSuperuser = true;
 
 			this.emit200(socket);
 			return;
@@ -123,6 +126,7 @@ class SocketEndpoint {
 		if (res.hasOwnProperty('success') && res.success === true) {
 			client.userId = res.userId;
 			client.isAuthorized = true;
+			client.isSuperuser = false;
 
 			let loadUnreadMessageForUser = (inst) => {
 				inst.dbao.loadUnreadMessageForUser(res.userId, function(err, result) {
@@ -263,6 +267,35 @@ class SocketEndpoint {
 		}
 
 		socket.emit(EVENTS.onNewConversation, returnObj);
+	}
+
+	onLoadUnloadConversation(data) {
+		if (!data.hasOwnProperty('socketId')) {
+			return;
+		}
+
+		if (!this.clients.hasOwnProperty(data.socketId)) {
+			return;
+		}
+
+		let client = this.clients[data.socketId];
+		let socket = client.socket;
+
+		if (client.isSuperuser === false) {
+			this.emit401(socket);
+			return;
+		}
+
+		if (!data.hasOwnProperty('type') || !data.hasOwnProperty('channelId')) {
+			this.emit400(socket);
+			return;
+		}
+
+		if (data.type === 'join') {
+			socket.join(`channel${data.channelId}`);
+		} else {
+			socket.leave(`channel${data.channelId}`);
+		}
 	}
 	//endregion
 }

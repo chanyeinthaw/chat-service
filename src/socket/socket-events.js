@@ -10,5 +10,6 @@ module.exports = {
 
 	onMessageReceived: 'onMessageReceive',
 
-	onNewConversation: 'onNewConversation'
+	onNewConversation: 'onNewConversation',
+	onLoadUnloadConversation: 'onLoadUnloadConversation'
 };
