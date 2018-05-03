@@ -199,9 +199,16 @@ class SocketEndpoint {
 			delete result.affectedRows;
 
 			socket.emit(EVENTS.onMessageSend, emitData);
-			socket.to(`channel${result.conversation_id}`).emit(EVENTS.onMessageReceived, {
-				message: [result]
-			});
+
+			if (client.isSuperuser) {
+				this.server.in(`channel${result.conversation_id}`).emit(EVENTS.onMessageReceived, {
+					messages: [result]
+				});
+			} else {
+				socket.to(`channel${result.conversation_id}`).emit(EVENTS.onMessageReceived, {
+					messages: [result]
+				});
+			}
 
 			console.log(`CLIENT_MSG_SENT id: ${socket.id}, ip: ${socket.handshake.address}`);
 		}.bind(this));
@@ -294,12 +301,14 @@ class SocketEndpoint {
 		}
 
 		if (data.type === 'join') {
+			console.log(`CLIENT_JOIN_CHANNEL: ${data.channelId}`);
 			socket.join(`channel${data.channelId}`);
 		} else {
+			console.log(`CLIENT_LEAVE_CHANNEL: ${data.channelId}`);
 			socket.leave(`channel${data.channelId}`);
 		}
 
-		socket.emit(EVENTS.onLoadUnloadConversation, { success: true });
+		socket.emit(EVENTS.onLoadUnloadConversation, { channelId: data.channelId, success: true });
 	}
 	//endregion
 }
