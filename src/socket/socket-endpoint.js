@@ -204,12 +204,15 @@ class SocketEndpoint {
 			return;
 		}
 
-		if (!data.hasOwnProperty('conversationId') || !data.hasOwnProperty('content') || !data.hasOwnProperty('timestamp')) {
+		if (!data.hasOwnProperty('conversationId') || !data.hasOwnProperty('timestamp')) {
 			this.emit400(socket);
 			return;
 		}
 		//endregion
 
+		let content = data.hasOwnProperty('content') ? data.content : '',
+			image = data.hasOwnProperty('image') ? data.image : '',
+			docs = data.hasOwnProperty('docs') ? data.docs : '';
 		let suid = data.hasOwnProperty('superuserId') ? data.superuserId : null;
 		let sent = suid === null ? 2 : 0;
 
@@ -220,7 +223,7 @@ class SocketEndpoint {
 		};
 
 		try {
-			result = await this.dbao.addNewTextMessageRow(data.conversationId, data.content. suid, sent);
+			result = await this.dbao.addNewMessageRow(data.conversationId, content, image, docs, sent, suid);
 		} catch (e) {
 			emitData.success = false;
 

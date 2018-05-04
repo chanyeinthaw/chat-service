@@ -6,18 +6,6 @@ class PromiseDbao {
 		this.conn.connect();
 	}
 
-	addNewTextMessageRow(cid, ct, suid, sent) {
-		return this.addNewMessageRow(cid, ct, '', '', sent ,suid);
-	}
-
-	addNewImageMessageRow(cid, img, suid) {
-		//this.addNewMessageRow(cid, '', img, '', suid, callback);
-	}
-
-	addNewFileMessageRow(cid, ct, suid) {
-		//this.addNewMessageRow(cid, ct, '', '', suid, callback);
-	}
-
 	addNewMessageRow(cid, ct, img, doc, sent, suid) {
 		let newMessageQuery =
 			'INSERT INTO messages SET ?';
