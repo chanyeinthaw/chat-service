@@ -87,7 +87,7 @@ class SocketEndpoint {
 		});
 	}
 
-	onAuthenticate(data) {
+	async onAuthenticate(data) {
 		//region auth section
 		if (!data.hasOwnProperty('socketId')) {
 			return;
@@ -123,36 +123,62 @@ class SocketEndpoint {
 		}
 		//endregion
 
-		let res = webAuth(data.sessionId);
+		let res = null;
+
+		try {
+			res = webAuth(data.sessionId);
+		} catch (e) {
+			console.log(`ERROR: ${e.code} ${e.message}`);
+			socket.emit(EVENTS.onError, {
+				code: e.code,
+				message: e.message
+			});
+			return;
+		}
 
 		if (res.hasOwnProperty('success') && res.success === true) {
 			client.userId = res.userId;
 			client.isAuthorized = true;
 			client.isSuperuser = false;
-
-			let loadUnreadMessageForUser = (inst) => {
-				inst.dbao.loadUnreadMessageForUser(res.userId, function(err, result) {
-					if (result) {
-						console.log(`CLIENT_LOAD_UNREAD id: ${socket.id}, ip: ${socket.handshake.address}`);
-
-						socket.emit(EVENTS.onLoadUnreadMessages, result);
-					}
-
-					inst.emit200(socket);
+			
+			let conversations = null;
+			
+			try {
+				conversations = await this.dbao.loadConversationsForUser(res.userId);
+			} catch (e) {
+				console.log(`ERROR: loadConversationsForUser`);
+				
+				socket.emit(EVENTS.onError, {
+					code: e.code,
+					sql: e.sql,
+					message: e.sqlMessage
 				});
-			};
+				return;
+			}
+			
+			for(let i in conversations) {
+				if (conversations.hasOwnProperty(i))
+					socket.join(`channel${conversations[i].id}`);
+			}
+			
+			let unreadMesages = null;
+			
+			try {
+				unreadMesages = await this.dbao.loadUnreadMessageForUser(res.userId);
+			} catch (e) {
+				console.log(`ERROR: loadUnreadMessageForUser`);
 
-			this.dbao.loadConversationsForUser(res.userId, function(err, result) {
-				if (result) {
-					for(let i in result) {
-						if (result.hasOwnProperty(i))
-							socket.join(`channel${result[i].id}`);
-					}
+				socket.emit(EVENTS.onError, {
+					code: e.code,
+					sql: e.sql,
+					message: e.sqlMessage
+				});
+				return;
+			}
 
-					loadUnreadMessageForUser(this);
-				}
-			}.bind(this));
-
+			console.log(`CLIENT_LOAD_UNREAD id: ${socket.id}, ip: ${socket.handshake.address}`);
+			socket.emit(EVENTS.onLoadUnreadMessages, unreadMesages);
+			this.emit200(socket);
 
 			return;
 		}
@@ -160,7 +186,8 @@ class SocketEndpoint {
 		this.emit401(socket);
 	}
 
-	onMessageSend(data) {
+	async onMessageSend(data) {
+		//region auth section
 		if (!data.hasOwnProperty('socketId')) {
 			return;
 		}
@@ -181,45 +208,57 @@ class SocketEndpoint {
 			this.emit400(socket);
 			return;
 		}
+		//endregion
 
 		let suid = data.hasOwnProperty('superuserId') ? data.superuserId : null;
 		let sent = suid === null ? 2 : 0;
 
-		this.dbao.addNewTextMessageRow(data.conversationId, data.content, suid, sent, function(err, result) {
-			let emitData =  {
-				timestamp: data.timestamp,
-				success: true
-			};
+		let result = null;
+		let emitData =  {
+			timestamp: data.timestamp,
+			success: true
+		};
 
-			if (err) {
-				emitData.success = false;
+		try {
+			result = await this.dbao.addNewTextMessageRow(data.conversationId, data.content. suid, sent);
+		} catch (e) {
+			emitData.success = false;
+
+			console.log(`ERROR: loadConversationsForUser`);
+
+			socket.emit(EVENTS.onError, {
+				code: e.code,
+				sql: e.sql,
+				message: e.sqlMessage
+			});
+			return;
+		}
+
+		if (result.affectedRows <= 0)
+			emitData.success = false;
+
+		if (emitData.success)
+			delete result.affectedRows;
+
+		socket.emit(EVENTS.onMessageSend, emitData);
+
+		if (emitData.success) {
+			if (client.isSuperuser) {
+				this.server.in(`channel${result.conversation_id}`).emit(EVENTS.onMessageReceived, {
+					messages: [result]
+				});
 			} else {
-				if (result.affectedRows <= 0)
-					emitData.success = false;
+				socket.to(`channel${result.conversation_id}`).emit(EVENTS.onMessageReceived, {
+					messages: [result]
+				});
 			}
+		}
 
-			if (emitData.success)
-				delete result.affectedRows;
-
-			socket.emit(EVENTS.onMessageSend, emitData);
-
-			if (emitData.success) {
-				if (client.isSuperuser) {
-					this.server.in(`channel${result.conversation_id}`).emit(EVENTS.onMessageReceived, {
-						messages: [result]
-					});
-				} else {
-					socket.to(`channel${result.conversation_id}`).emit(EVENTS.onMessageReceived, {
-						messages: [result]
-					});
-				}
-			}
-
-			console.log(`CLIENT_MSG_SENT id: ${socket.id}, ip: ${socket.handshake.address}`);
-		}.bind(this));
+		console.log(`CLIENT_MSG_SENT id: ${socket.id}, ip: ${socket.handshake.address}`);
 	}
 
-	onLoadMessages(data) {
+	async onLoadMessages(data) {
+		//region auth section
 		if (!data.hasOwnProperty('socketId')) {
 			return;
 		}
@@ -240,22 +279,35 @@ class SocketEndpoint {
 			this.emit400(socket);
 			return;
 		}
+		//endregion
 
 		data.userId = client.userId;
 		data.limit = data.hasOwnProperty('limit') ? data.limit : defaultLoadLimit;
 
-		this.dbao.loadMessages(data, function(err, result) {
-			console.log(`CLIENT_LOAD_MSG id: ${socket.id}, ip: ${socket.handshake.address}`);
+		let result = null;
 
-			if (err) {
-				socket.emit(EVENTS.onLoadMessages, MSGS.MessageLoadError);
-			} else {
-				socket.emit(EVENTS.onLoadMessages, result);
-			}
-		}.bind(this));
+		try {
+			result = await this.dbao.loadMessages(data);
+		} catch (e) {
+			console.log(`ERROR: loadMessages`);
+
+			socket.emit(EVENTS.onLoadMessages, MSGS.MessageLoadError);
+
+			socket.emit(EVENTS.onError, {
+				code: e.code,
+				sql: e.sql,
+				message: e.sqlMessage
+			});
+			return;
+		}
+
+		console.log(`CLIENT_LOAD_MSG id: ${socket.id}, ip: ${socket.handshake.address}`);
+
+		socket.emit(EVENTS.onLoadMessages, result);
 	}
 
 	onNewConversation(data) {
+		//region auth section
 		if (!data.hasOwnProperty('socketId')) {
 			return;
 		}
@@ -271,6 +323,7 @@ class SocketEndpoint {
 			this.emit401(socket);
 			return;
 		}
+		//endregion
 
 		let returnObj = {success: false};
 
@@ -316,7 +369,8 @@ class SocketEndpoint {
 		socket.emit(EVENTS.onLoadUnloadConversation, { channelId: data.channelId, success: true });
 	}
 
-	onUpdateMessageSentStatus(data) {
+	async onUpdateMessageSentStatus(data) {
+		//region auth section
 		if (!data.hasOwnProperty('socketId')) {
 			return;
 		}
@@ -338,14 +392,26 @@ class SocketEndpoint {
 			return;
 		}
 
-		this.dbao.updateMessageSentStatus(data.idArray, function(err, result) {
-			let retObj = {success: false};
-			if (result && result.affectedRows > 0) {
-				retObj.success = true;
-			}
+		//endregion
 
-			socket.emit(EVENTS.onUpdateMessageSentStatus, retObj);
-		}.bind(this));
+		let result = null;
+		let retObj = {success: false};
+		try {
+			result = await this.dbao.updateMessageSentStatus(data.idArray);
+		} catch (e) {
+			console.log(`ERROR: updateMessageSentStatus`);
+
+			socket.emit(EVENTS.onError, {
+				code: e.code,
+				sql: e.sql,
+				message: e.sqlMessage
+			});
+			return;
+		}
+		if (result && result.affectedRows > 0) {
+			retObj.success = true;
+		}
+		socket.emit(EVENTS.onUpdateMessageSentStatus, retObj);
 	}
 	//endregion
 }
