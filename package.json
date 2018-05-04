@@ -1,7 +1,7 @@
 {
   "name": "bizlaw-chat-service",
   "version": "1.0.0",
-  "description": "Bizlaw Myanmar CHAT service ",
+  "description": "Bizlaw Myanmar Chat service ",
   "main": "index.js",
   "scripts": {
     "dev": "node index.js",
