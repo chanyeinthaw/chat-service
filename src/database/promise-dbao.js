@@ -47,7 +47,7 @@ class PromiseDbao {
 
     loadAllConversations() {
 	    return new Promise((resolve, reject) => {
-	        let query = 'SELECT * FROM conversations INNER JOIN userdetails ON conversations.user_id = users.id;';
+	        let query = 'SELECT conversations.*, userdetails.* FROM conversations INNER JOIN userdetails ON conversations.user_id = users.id;';
 	        this.conn.query(query, function (e, r, f) {
                 if (e) reject(e);
                 else resolve(r);
