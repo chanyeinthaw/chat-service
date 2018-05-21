@@ -28,6 +28,8 @@ class SocketEndpoint {
 		socket.on(EVENTS.onLoadUnloadConversation, this.onLoadUnloadConversation.bind(this));
 
 		socket.on(EVENTS.onUpdateMessageSentStatus, this.onUpdateMessageSentStatus.bind(this))
+
+		socket.on(EVENTS.onLoadAllConversations, this.onLoadAllConversations.bind(this));
 	}
 
 	//region StatusEmits
@@ -415,6 +417,40 @@ class SocketEndpoint {
 			retObj.success = true;
 		}
 		socket.emit(EVENTS.onUpdateMessageSentStatus, retObj);
+	}
+
+	async onLoadAllConversations(data) {
+        if (!data.hasOwnProperty('socketId')) {
+            return;
+        }
+
+        if (!this.clients.hasOwnProperty(data.socketId)) {
+            return;
+        }
+
+        let client = this.clients[data.socketId];
+        let socket = client.socket;
+
+        if (client.isSuperuser === false) {
+            this.emit401(socket);
+            return;
+        }
+
+        let result = null;
+        let retObj = {success: false};
+        try {
+            result = await this.dbao.loadAllConversations();
+        } catch (e) {
+            console.log(`ERROR: onLoadAllConversations`);
+
+            socket.emit(EVENTS.onError, {
+                code: e.code,
+                sql: e.sql,
+                message: e.sqlMessage
+            });
+            return;
+        }
+        socket.emit(EVENTS.onLoadAllConversations, result);
 	}
 	//endregion
 }
