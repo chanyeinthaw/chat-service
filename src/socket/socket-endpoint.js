@@ -131,7 +131,7 @@ class SocketEndpoint {
             retObj.success = true;
             retObj.idArray = data.idArray;
         }
-        socket.emit(EVENTS.onDeleteConversations, retObj);
+        this.server.sockets.emit(EVENTS.onDeleteConversations, retObj);
 	}
 
 	async onAuthenticate(data) {
