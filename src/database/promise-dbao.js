@@ -96,7 +96,7 @@ class PromiseDbao {
 
     deleteConversations(idArray) {
         return new Promise((resolve, reject) => {
-            this.conn.query('DELETE conversations WHERE id IN (?)', [idArray], (e, r, f) => {
+            this.conn.query('DELETE FROM conversations WHERE id IN (?)', [idArray], (e, r, f) => {
                 if (e) reject(e);
                 else resolve(r);
             });
