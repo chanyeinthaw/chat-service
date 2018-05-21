@@ -129,6 +129,7 @@ class SocketEndpoint {
         }
         if (result && result.affectedRows > 0) {
             retObj.success = true;
+            retObj.idArray = idArray;
         }
         socket.emit(EVENTS.onDeleteConversations, retObj);
 	}
