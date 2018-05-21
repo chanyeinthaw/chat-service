@@ -395,7 +395,7 @@ class SocketEndpoint {
             });
         }
 
-		socket.emit(EVENTS.onNewConversation, returnObj);
+		this.server.sockets.emit(EVENTS.onNewConversation, returnObj);
 	}
 
 	onLoadUnloadConversation(data) {
