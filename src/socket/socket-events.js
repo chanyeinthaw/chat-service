@@ -11,6 +11,7 @@ module.exports = {
 	onMessageReceived: 'onMessageReceive',
 
 	onNewConversation: 'onNewConversation',
+	onDeleteConversations: 'onDeleteConversations',
 	onLoadAllConversations: 'onLoadAllConversations',
 	onLoadUnloadConversation: 'onLoadUnloadConversation',
 

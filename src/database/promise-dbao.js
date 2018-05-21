@@ -94,6 +94,15 @@ class PromiseDbao {
 		});
 	}
 
+    deleteConversations(idArray) {
+        return new Promise((resolve, reject) => {
+            this.conn.query('DELETE conversations WHERE id IN (?)', [idArray], (e, r, f) => {
+                if (e) reject(e);
+                else resolve(r);
+            });
+        });
+    }
+
 	loadMessages(opts) {
 		return new Promise((resolve, reject) => {
 			let loadMessageQuery =

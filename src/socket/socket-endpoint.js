@@ -30,6 +30,8 @@ class SocketEndpoint {
 		socket.on(EVENTS.onUpdateMessageSentStatus, this.onUpdateMessageSentStatus.bind(this))
 
 		socket.on(EVENTS.onLoadAllConversations, this.onLoadAllConversations.bind(this));
+
+		socket.on(EVENTS.onDeleteConversations, this.onDeleteConversations.bind(this));
 	}
 
 	//region StatusEmits
@@ -87,6 +89,48 @@ class SocketEndpoint {
 		socket.on(EVENTS.onDisconnect, () => {
 			console.log(`CLIENT_DISCONNECTED id:${socket.id}, ip: ${socket.handshake.address}`);
 		});
+	}
+
+	async onDeleteConversations(data) {
+        if (!data.hasOwnProperty('socketId')) {
+            return;
+        }
+
+        if (!this.clients.hasOwnProperty(data.socketId)) {
+            return;
+        }
+
+        let client = this.clients[data.socketId];
+        let socket = client.socket;
+
+        if (client.isAuthorized === false) {
+            this.emit401(socket);
+            return;
+        }
+
+        if (!data.hasOwnProperty('idArray')) {
+            this.emit400(socket);
+            return;
+        }
+
+        let result = null;
+        let retObj = {success: false};
+        try {
+            result = await this.dbao.deleteConversations(data.idArray);
+        } catch (e) {
+            console.log(`ERROR: deleteConversations`);
+
+            socket.emit(EVENTS.onError, {
+                code: e.code,
+                sql: e.sql,
+                message: e.sqlMessage
+            });
+            return;
+        }
+        if (result && result.affectedRows > 0) {
+            retObj.success = true;
+        }
+        socket.emit(EVENTS.onDeleteConversations, retObj);
 	}
 
 	async onAuthenticate(data) {
