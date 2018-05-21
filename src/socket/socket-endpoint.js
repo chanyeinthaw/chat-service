@@ -129,7 +129,7 @@ class SocketEndpoint {
         }
         if (result && result.affectedRows > 0) {
             retObj.success = true;
-            retObj.idArray = idArray;
+            retObj.idArray = data.idArray;
         }
         socket.emit(EVENTS.onDeleteConversations, retObj);
 	}
@@ -356,7 +356,7 @@ class SocketEndpoint {
 		socket.emit(EVENTS.onLoadMessages, result);
 	}
 
-	onNewConversation(data) {
+	async onNewConversation(data) {
 		//region auth section
 		if (!data.hasOwnProperty('socketId')) {
 			return;
@@ -382,6 +382,18 @@ class SocketEndpoint {
 
 			returnObj.success = true;
 		}
+
+		try {
+			returnObj.conversation = await this.dbao.loadConversationById(data.conversationId);
+		} catch (e) {
+            console.log(`ERROR: loadConversationById`);
+
+            socket.emit(EVENTS.onError, {
+                code: e.code,
+                sql: e.sql,
+                message: e.sqlMessage
+            });
+        }
 
 		socket.emit(EVENTS.onNewConversation, returnObj);
 	}
