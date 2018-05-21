@@ -133,7 +133,11 @@ class SocketEndpoint {
         }
 
         socket.emit(EVENTS.onDeleteConversations, retObj);
-        this.server.sockets.emit(EVENTS.onDeleteConversationAll, retObj);
+
+        if (client.isSuperuser)
+        	this.server.sockets.emit(EVENTS.onDeleteConversationAll, retObj);
+        else
+            this.server.sockets.emit(EVENTS.onSoftDeleteConversationAll, retObj);
 	}
 
 	async onAuthenticate(data) {

@@ -13,6 +13,7 @@ module.exports = {
 	onNewConversation: 'onNewConversation',
 	onDeleteConversations: 'onDeleteConversations',
     onDeleteConversationAll: 'onDeleteConversationAll',
+    onSoftDeleteConversationAll: 'onSoftDeleteConversationAll',
 	onLoadAllConversations: 'onLoadAllConversations',
 	onLoadUnloadConversation: 'onLoadUnloadConversation',
 
