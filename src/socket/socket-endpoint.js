@@ -116,7 +116,7 @@ class SocketEndpoint {
         let result = null;
         let retObj = {success: false};
         try {
-            result = await this.dbao.deleteConversations(data.idArray);
+            result = await this.dbao.deleteConversations(data.idArray, client.isSuperuser);
         } catch (e) {
             console.log(`ERROR: deleteConversations`);
 

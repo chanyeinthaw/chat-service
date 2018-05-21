@@ -104,9 +104,17 @@ class PromiseDbao {
 		});
 	}
 
-    deleteConversations(idArray) {
+    deleteConversations(idArray, isSuperuser) {
         return new Promise((resolve, reject) => {
-            this.conn.query('DELETE FROM conversations WHERE id IN (?)', [idArray], (e, r, f) => {
+        	let query = '';
+
+        	if (isSuperuser) {
+        		query = 'DELETE FROM conversations WHERE id IN (?)';
+			} else {
+                query = 'UPDATE conversations SET is_deleted = 1 WHERE id IN (?)';
+			}
+
+            this.conn.query(query, [idArray], (e, r, f) => {
                 if (e) reject(e);
                 else resolve(r);
             });
