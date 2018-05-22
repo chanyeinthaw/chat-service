@@ -129,7 +129,7 @@ class PromiseDbao {
 				'INNER JOIN conversations ON messages.conversation_id = conversations.id ' +
 				'LEFT JOIN superusers ON messages.superuser_id = superusers.id ' +
 				'WHERE conversations.user_id = ? AND messages.conversation_id = ? ' +
-				'ORDER BY messages.created_at DESC LIMIT ' + opts.limit + ' OFFSET ' + opts.skip;
+				'ORDER BY messages.id LIMIT ' + opts.limit + ' OFFSET ' + opts.skip;
 
 			this.conn.query(loadMessageQuery,
 			[opts.userId, opts.conversationId], (error, result, fields) => {
