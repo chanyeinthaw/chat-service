@@ -337,7 +337,10 @@ class SocketEndpoint {
 		}
 		//endregion
 
-		data.userId = client.userId;
+		if (client.isSuperuser)
+			data.userId = data.hasOwnProperty('userId') ? data.userId : -1;
+		else
+			data.userId = client.userId;
 		data.limit = data.hasOwnProperty('limit') ? data.limit : defaultLoadLimit;
 
 		let result = null;
