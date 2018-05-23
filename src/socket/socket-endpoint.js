@@ -108,6 +108,11 @@ class SocketEndpoint {
             return;
         }
 
+        if (client.isSuperuser && !client.isAdmin) {
+            this.emit401(socket);
+            return;
+		}
+
         if (!data.hasOwnProperty('idArray')) {
             this.emit400(socket);
             return;
@@ -162,9 +167,10 @@ class SocketEndpoint {
 		//endregion
 
 		//region web auth sub-section
-		if (data.hasOwnProperty('accessKey') && this.config.accessKey === data.accessKey) {
+		if (data.hasOwnProperty('accessKey') && data.hasOwnProperty('role') && this.config.accessKey === data.accessKey) {
 			client.isAuthorized = true;
 			client.isSuperuser = true;
+			client.isAdmin = data.role === 1;
 
 			this.emit200(socket);
 			return;
