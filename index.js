@@ -1,4 +1,4 @@
-const SocketEndpoint = require('./src/socket/socket-endpoint.js');
+const SocketEndpoint = require('./src/socket/SocketEndpoint.js');
 const Dbao = require('./src/database');
 const config = require('./config.js');
 
