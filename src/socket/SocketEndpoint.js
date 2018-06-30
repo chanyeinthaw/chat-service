@@ -72,6 +72,12 @@ class SocketEndpoint {
 
 	//region Events
 	onConnection(socket) {
+        function log() {
+            let array = ['Message from server:'];
+            array.push.apply(array, arguments);
+            socket.emit('log', array);
+        }
+
 		console.log(`CLIENT_CONNECTED id: ${socket.id}, ip: ${socket.handshake.address}`);
 
 		this.clients[socket.id] = {
