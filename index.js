@@ -13,6 +13,17 @@ process.on('unhandledRejection', error => {
 
 const database = new PromiseDBAO(config.mysql)
 const core = new SocketCore(config.port)
+const signal = new SocketCore(config.port + 1)
+
+signal.onConnection((client) => {
+    let signalingServer = new SignalingServer(signal, client, signalingConfig)
+
+    client.on('disconnect', () => {
+        console.log(`CLIENT_DISCONNECTED id: ${client.id}`)
+
+        signalingServer.removeFeed()
+    })
+})
 
 core.onConnection((client) => {
 	console.log(`CLIENT_CONNECTED id: ${client.id}`)
@@ -20,12 +31,10 @@ core.onConnection((client) => {
 	core.addClient(new SocketClient(client))
 
 	new ChatEndpoint(core, client, database, config.ioConfig.accessKey)
-	let signalingServer = new SignalingServer(config, client, signalingConfig)
 
 	client.on('disconnect', () => {
 		console.log(`CLIENT_DISCONNECTED id: ${client.id}`)
 
-		signalingServer.removeFeed()
 		core.removeClient(client)
 	})
 })
