@@ -1,14 +1,17 @@
 const ChatEndpoint = require('./src/chat/ChatEndpoint')
 const SocketCore = require('./src/socket/SocketCore')
 const SocketClient = require('./src/socket/SocketClient')
-const Dbao = require('./src/database')
-const config = require('./config.js')
+const SignalingServer = require('./src/webrtc/SignalingServer')
+const PromiseDBAO = require('./src/database/PromiseDBAO')
+
+const config = require('./config/chat.js')
+const signalingConfig = require('./config/signaling.js')
 
 process.on('unhandledRejection', error => {
 	console.log('UnhandledRejection', error.code ,error.message)
 })
 
-const database = new Dbao(config.mysql)
+const database = new PromiseDBAO(config.mysql)
 const core = new SocketCore(config.port)
 
 core.onConnection((client) => {
@@ -16,11 +19,13 @@ core.onConnection((client) => {
 
 	core.addClient(new SocketClient(client))
 
-	let chatEp = new ChatEndpoint(core, client, database, config.ioConfig.accessKey)
+	new ChatEndpoint(core, client, database, config.ioConfig.accessKey)
+	let signalingServer = new SignalingServer(config, client, signalingConfig)
 
 	client.on('disconnect', () => {
 		console.log(`CLIENT_DISCONNECTED id: ${client.id}`)
 
+		signalingServer.removeFeed()
 		core.removeClient(client)
 	})
 })

@@ -1,5 +1,5 @@
 const request = require('sync-request');
-const config = require('../config.js');
+const config = require('../config/chat.js');
 
 const authURL = `http://${config.server.host}:${config.server.port}/api/io-auth`;
 const requestMethod = 'GET';

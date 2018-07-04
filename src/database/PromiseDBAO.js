@@ -1,6 +1,6 @@
 const mysql = require('mysql');
 
-class PromiseDbao {
+class PromiseDBAO {
 	constructor(config) {
 		this.conn = mysql.createConnection(config);
 		this.conn.connect();
@@ -162,4 +162,4 @@ class PromiseDbao {
 	}
 }
 
-module.exports = PromiseDbao;
+module.exports = PromiseDBAO;

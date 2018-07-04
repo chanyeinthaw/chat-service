@@ -46,6 +46,10 @@ class SocketCore {
     getNumberOfClients() {
         return this._server.sockets.sockets.length
     }
+
+    getNumberOfClientsInRoom(name) {
+        return this._server.clients(name).length
+    }
 }
 
 module.exports = SocketCore

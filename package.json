@@ -26,6 +26,7 @@
     "async": "^2.6.0",
     "express": "^4.16.3",
     "mysql": "github:mysqljs/mysql",
+    "node-uuid": "^1.4.8",
     "socket.io": "^2.1.0",
     "sync-request": "^6.0.0"
   }
