@@ -20,7 +20,7 @@ class SignalingServer {
         let xirsys = this._config.xirsys
         let origin = this._client.handshake.origin
         let options = {
-            host: xirsys.host,
+            host: xirsys.gateway,
             path: `/_turn/${xirsys.channel}`,
             method: 'PUT',
             headers: {
