@@ -454,6 +454,8 @@ class ChatEndpoint {
     //endregion
 
     registerEvents() {
+        this._client.on(EVENTS.onAuthenticate, this.onAuthenticate.bind(this));
+
         this._client.on(EVENTS.onMessageSend, this.onMessageSend.bind(this))
 
         this._client.on(EVENTS.onLoadMessages, this.onLoadMessages.bind(this))
