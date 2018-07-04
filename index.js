@@ -17,6 +17,7 @@ const signal = new SocketCore(config.port + 1)
 
 signal.onConnection((client) => {
     let signalingServer = new SignalingServer(signal, client, signalingConfig)
+	signalingServer.requestIce()
 
     client.on('disconnect', () => {
         console.log(`CLIENT_DISCONNECTED id: ${client.id}`)
