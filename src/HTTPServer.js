@@ -5,12 +5,16 @@ class HTTPServer {
         this._express = express
         this._config = config
 
-        this._secureServer = require('https').createServer( {
-            key: fs.readFileSync(config.server.key),
-            cert: fs.readFileSync(config.server.cert)
-        }, this._express)
+        if (config.server.secure) {
+            this._secureServer = require('https').createServer( {
+                key: fs.readFileSync(config.server.key),
+                cert: fs.readFileSync(config.server.cert)
+            }, this._express)
 
-        this._unSecureServer = require('http').createServer(this._express)
+            this._unSecureServer = require('http').createServer(this._express)
+        } else {
+            this._unSecureServer = require('http').createServer(this._express)
+        }
     }
 
     start() {
@@ -18,11 +22,19 @@ class HTTPServer {
         let unsecurePort = this._config.server.portUnSecure
         let host = this._config.server.host
         if (host) {
-            this._secureServer.listen(port, host, this._unSecureServer)
-            this._unSecureServer.listen(unsecurePort, host, this._unSecureServer)
+            if (this._config.secure) {
+                this._secureServer.listen(port, host, this._serverErrorHandler)
+                this._unSecureServer.listen(unsecurePort, host, this._serverErrorHandler)
+            } else {
+                this._unSecureServer.listen(port, host, this._serverErrorHandler)
+            }
         } else {
-            this._secureServer.listen(port, this._unSecureServer)
-            this._unSecureServer.listen(unsecurePort, this._unSecureServer)
+            if (this._config.secure) {
+                this._secureServer.listen(port, this._serverErrorHandler)
+                this._unSecureServer.listen(unsecurePort, this._serverErrorHandler)
+            } else {
+                this._unSecureServer.listen(port, this._serverErrorHandler)
+            }
         }
 
         console.log(`HTTPS Server Started ${host ? host : ':'}:${port}`)

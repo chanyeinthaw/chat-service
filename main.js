@@ -7,7 +7,12 @@ const HTTPServer = require('./src/HTTPServer')
 const config = require('getconfig')
 const app = require('express')()
 
-const httpServer = new HTTPServer(app, config); httpServer.start()
+const httpServer = new HTTPServer(app, config)
+httpServer.serverErrorHandler = (err) => {
+    if (err) throw err
+}
+httpServer.start()
+
 const database = new PromiseDBAO(config.mysql)
 const core = new SocketCore(httpServer.server)
 
