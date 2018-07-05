@@ -16,12 +16,10 @@ class HTTPServer {
             this._unSecureServer = require('http').createServer(this._express)
         }
 
-        express.configure(() => {
-            express.use((req, res, next) => {
-                res.header("Access-Control-Allow-Origin", "*");
-                res.header("Access-Control-Allow-Headers", "X-Requested-With");
-                next();
-            })
+        express.use((req, res, next) => {
+            res.header("Access-Control-Allow-Origin", "*");
+            res.header("Access-Control-Allow-Headers", "X-Requested-With");
+            next();
         })
     }
 
