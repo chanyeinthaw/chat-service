@@ -1,8 +1,10 @@
 const SocketIO = require('socket.io')
 class SocketCore {
-    constructor(port) {
+    constructor(server) {
         this._clients = {}
-        this._server = SocketIO(port)
+        this._server = SocketIO(server, {
+            origins: "*:*"
+        })
     }
 
     get server() {
