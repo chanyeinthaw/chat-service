@@ -24,7 +24,7 @@ class SignalingServer {
             path: `/_turn/${xirsys.channel}`,
             method: 'PUT',
             headers: {
-                'Authorization': 'Basic ' + new Buffer(xirsys.info.ident + ':' + xirsys.info.secret)
+                'Authorization': 'Basic ' + new Buffer(xirsys.info.ident + ':' + xirsys.info.secret).toString('base64')
             }
         }
 
