@@ -7,6 +7,12 @@ const HTTPServer = require('./src/HTTPServer')
 const config = require('getconfig')
 const app = require('express')()
 
+app.use(function(req, res, next) {
+    res.header("Access-Control-Allow-Origin", config.server.origins);
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    next();
+});
+
 const httpServer = new HTTPServer(app, config)
 httpServer.serverErrorHandler = (err) => {
     if (err) throw err
