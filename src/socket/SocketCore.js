@@ -1,10 +1,10 @@
 const SocketIO = require('socket.io')
+const config = require('getconfig')
 class SocketCore {
     constructor(server) {
         this._clients = {}
-        this._server = SocketIO(server, {
-            origins: "*:*"
-        })
+        this._server = SocketIO(server)
+        this._server.origins(config.server.origins)
     }
 
     get server() {
