@@ -4,11 +4,12 @@ const MSGS = require('./messages.js')
 const webAuth = require('../web-auth.js')
 
 class ChatEndpoint {
-    constructor(server, client, db, accessKey) {
+    constructor(server, client, db, config) {
         this._server = server
         this._client = client
         this._db = db
-        this._accessKey = accessKey
+        this._accessKey = config.ioConfig.accessKey
+        this._config = config
         
         this.registerEvents()
         this.emitAuthRequest()
@@ -137,7 +138,7 @@ class ChatEndpoint {
         let res = null
 
         try {
-            res = webAuth(data.sessionId)
+            res = webAuth(data.sessionId, this._config)
         } catch (e) {
             console.log(`ERROR: ${e.code} ${e.message}`)
             this._client.emit(EVENTS.onError, {

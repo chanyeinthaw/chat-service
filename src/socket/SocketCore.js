@@ -2,9 +2,7 @@ const SocketIO = require('socket.io')
 class SocketCore {
     constructor(port) {
         this._clients = {}
-        this._server = SocketIO.listen(port)
-
-        console.log(`SOCKET_CORE: STARTED ${port}`)
+        this._server = SocketIO(port)
     }
 
     get server() {
