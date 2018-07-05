@@ -41,7 +41,7 @@ class HTTPServer {
     }
 
     get server() {
-        return this._secureServer
+        return this._config.secure ? this._secureServer : this._unSecureServer
     }
 
     set serverErrorHandler (value) {
