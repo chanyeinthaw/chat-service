@@ -1,4 +1,3 @@
 node_modules/
-config/chat.js
-config/signaling.js
+config/development.js
 config.js
