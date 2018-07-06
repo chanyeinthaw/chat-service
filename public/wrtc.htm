@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
+    <script src="https://simplewebrtc.com/latest-v3.js"></script>
+</head>
+<body>
+<video height="300" id="localVideo"></video>
+<div id="remotesVideos"></div>
+<script>
+    function start(data) {
+        // grab the room from the URL
+        var room = 'bizlaw'
+        console.log('start ', data);
+        // create our webrtc connection
+        var webrtc = new SimpleWebRTC({
+            // the id/element dom element that will hold "our" video
+            localVideoEl: 'localVideo',
+            // the id/element dom element that will hold remote videos
+            remoteVideosEl: 'remotesVideos',
+            // immediately ask for camera access
+            autoRequestMedia: true,
+            debug: false,
+            detectSpeakingEvents: true,
+            url: data
+        });
+        // when it's ready, join if we got a room from the URL
+        webrtc.on('readyToCall', function () {
+            // you can name it anything
+            if (room) webrtc.joinRoom(room);
+            console.log(webrtc.config.peerConnectionConfig);
+        });
+    }
+
+    start('https://192.168.100.119:8889')
+</script>
+</body>
+</html>
