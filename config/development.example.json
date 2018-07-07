@@ -1,21 +1,36 @@
 {
   "isDev": true,
-  "server": {
-    "host": "192.168.100.119",
-    "port": 443,
-    "portUnSecure": 80,
-    "secure": true,
+  "useSSL": true,
+
+  "ssl" : {
     "key": "./cert/server.key",
-    "cert": "./cert/server.crt",
-    "password": null
+    "cert": "./cert/server.crt"
   },
+
+  "chatServer" : {
+    "secure": true,
+    "host": "",
+    "accessKey": "foolish",
+    "port": {
+      "secure": 443,
+      "unsecure": 80
+    }
+  },
+
+  "signalingServer": {
+    "secure": true,
+    "host": "",
+    "port" : {
+      "secure": 8443,
+      "unsecure": 8080
+    }
+  },
+
   "laravel": {
     "host": "localhost",
     "port": 8000
   },
-  "ioConfig": {
-    "accessKey": "foolish"
-  },
+
   "mysql": {
     "host": "localhost",
     "user": "root",
