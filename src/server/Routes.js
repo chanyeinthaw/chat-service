@@ -22,10 +22,10 @@ class Routes {
     static getClient(req, res) {
         let socketId = req.params.id
 
-        if (!socketId) return res.send({error: true})
+        if (!socketId) return res.send({client: null})
 
         let client =  Clients.getClient(socketId)
-        if (!client) return res.send({error: true})
+        if (!client) return res.send({client: null})
 
         let resp = {
             socketId: client.socketId,
