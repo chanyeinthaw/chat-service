@@ -2,14 +2,15 @@ const EVENTS = require('./events.js')
 const MSGS = require('./messages.js')
 
 const webAuth = require('../web-auth.js')
+const Clients = require('../socket/ClientRepository')
 
 class ChatEndpoint {
-    constructor(server, client, db, config) {
+    constructor(server, client, db, accessKey, laravel) {
         this._server = server
         this._client = client
         this._db = db
-        this._accessKey = config.ioConfig.accessKey
-        this._config = config
+        this._accessKey = accessKey
+        this._laravel = laravel
         
         this.registerEvents()
         this.emitAuthRequest()
@@ -57,7 +58,7 @@ class ChatEndpoint {
             return
         }
 
-        let client = this._server.getClient(data.socketId)
+        let client = Clients.getClient(data.socketId)
         if (client === null) return
 
         if (client.isAuthorized === false) {
@@ -110,7 +111,7 @@ class ChatEndpoint {
 
         console.log(`CLIENT_AUTH_ATTEMPT id: ${data.socketId}`)
 
-        let client = this._server.getClient(data.socketId)
+        let client = Clients.getClient(data.socketId)
         if (client === null) return
 
         if (client.isAuthorized === true) {
@@ -138,7 +139,7 @@ class ChatEndpoint {
         let res = null
 
         try {
-            res = webAuth(data.sessionId, this._config)
+            res = webAuth(data.sessionId, this._laravel)
         } catch (e) {
             console.log(`ERROR: ${e.code} ${e.message}`)
             this._client.emit(EVENTS.onError, {
@@ -203,7 +204,7 @@ class ChatEndpoint {
             return
         }
 
-        let client = this._server.getClient(data.socketId)
+        let client = Clients.getClient(data.socketId)
         if (client === null) return
 
         if (client.isAuthorized === false) {
@@ -273,7 +274,7 @@ class ChatEndpoint {
             return
         }
 
-        let client = this._server.getClient(data.socketId)
+        let client = Clients.getClient(data.socketId)
         if (client === null) return
 
         if (client.isAuthorized === false) {
@@ -321,7 +322,7 @@ class ChatEndpoint {
             return
         }
 
-        let client = this._server.getClient(data.socketId)
+        let client = Clients.getClient(data.socketId)
         if (client === null) return
 
         if (client.isAuthorized === false) {
@@ -358,7 +359,7 @@ class ChatEndpoint {
             return
         }
 
-        let client = this._server.getClient(data.socketId)
+        let client = Clients.getClient(data.socketId)
         if (client === null) return
 
         if (client.isSuperuser === false) {
@@ -388,7 +389,7 @@ class ChatEndpoint {
             return
         }
 
-        let client = this._server.getClient(data.socketId)
+        let client = Clients.getClient(data.socketId)
         if (client === null) return
 
         if (client.isAuthorized === false) {
@@ -428,7 +429,7 @@ class ChatEndpoint {
             return
         }
 
-        let client = this._server.getClient(data.socketId)
+        let client = Clients.getClient(data.socketId)
         if (client === null) return
 
         if (client.isSuperuser === false) {
