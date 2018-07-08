@@ -29,7 +29,7 @@ core.onConnection((client) => {
 
 	Clients.addClient(new SocketClient(client))
 
-	new ChatEndpoint(core, client, database, config.chatServer.accesskey, config.laravel)
+	new ChatEndpoint(core, client, database, config.chatServer.accessKey, config.laravel)
 
 	client.on('disconnect', () => {
 		console.log(`CLIENT_DISCONNECTED id: ${client.id}`)

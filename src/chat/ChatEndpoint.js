@@ -23,7 +23,7 @@ class ChatEndpoint {
         this._client.emit(EVENTS.onError, MSGS.BadRequest)
         this._client.disconnect(true)
 
-        this._server.removeClient(this._client)
+        Clients.removeClient(this._client)
     }
 
     emit401() {
@@ -32,7 +32,7 @@ class ChatEndpoint {
         this._client.emit(EVENTS.onError, MSGS.AuthError)
         this._client.disconnect(true)
 
-        this._server.removeClient(this._client)
+        Clients.removeClient(this._client)
     }
 
     emit200() {
