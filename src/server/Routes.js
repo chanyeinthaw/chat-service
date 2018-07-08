@@ -1,5 +1,6 @@
 const path = require('path')
 const __public = __dirname + '/../../public'
+const Clients = require('../socket/ClientRepository')
 
 class Routes {
     constructor(app) {
@@ -7,6 +8,7 @@ class Routes {
 
         this._app.get('/test', this.getTest.bind(this))
         this._app.get('/wrtc', Routes.getWRTC.bind(this))
+        this._app.get('/clients/:id', Routes.getClient.bind(this))
     }
 
     static getWRTC(req, res) {
@@ -15,6 +17,14 @@ class Routes {
 
     getTest(req, res) {
 
+    }
+
+    static getClient(req, res) {
+        let socketId = req.params.id
+
+        if (!socketId) res.send({error: true})
+
+        res.send({ client: Clients.getClient(socketId)})
     }
 }
 
