@@ -6,7 +6,7 @@ class ClientRepository {
     static addClient(client) {
         let instance = this.getInstance()
 
-        if (!instance._client.hasOwnProperty(client.socketId))
+        if (!instance._clients.hasOwnProperty(client.socketId))
             instance._clients[client.socketId] = client
     }
 
@@ -24,7 +24,10 @@ class ClientRepository {
     }
 
     static getInstance() {
-        return ClientRepository.instance ? ClientRepository.instance : new ClientRepository()
+        if (!this.instance)
+            this.instance = new ClientRepository()
+
+        return this.instance
     }
 }
 
