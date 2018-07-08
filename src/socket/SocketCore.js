@@ -47,7 +47,7 @@ class SocketCore {
     }
 
     getNumberOfClientsInRoom(name) {
-        return this._server.clients(name).length
+        return this._server.sockets.clients(name).length
     }
 }
 

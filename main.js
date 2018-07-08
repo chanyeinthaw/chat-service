@@ -1,40 +1,40 @@
 const ChatEndpoint = require('./src/chat/ChatEndpoint')
 const SocketCore = require('./src/socket/SocketCore')
-const SocketClient = require('./src/socket/SocketClient')
+const SocketClient = require('./src/socket/Client')
+const Clients = require('./src/socket/ClientRepository')
 const PromiseDBAO = require('./src/database/PromiseDBAO')
-const HTTPServer = require('./src/HTTPServer')
+const HTTPServer = require('./src/server/HTTPServer')
+const SignalingServer = require('./src/webrtc/SignalingServer')
 
 const config = require('getconfig')
 const app = require('express')()
+const ssl = config.ssl
 
-app.use(function(req, res, next) {
-    res.header("Access-Control-Allow-Origin", req.headers.origin);
-    res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
-    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-    res.header("Access-Control-Allow-Credentials", "true")
-    next();
-});
+const chatServer = new HTTPServer(app, config.chatServer, ssl)
+const signalingServer = new HTTPServer(app, config.signalingServer, ssl)
 
-const httpServer = new HTTPServer(app, config)
-httpServer.serverErrorHandler = (err) => {
+function serverErrorHandler(err) {
     if (err) throw err
 }
-httpServer.start()
+
+chatServer.serverErrorHandler = serverErrorHandler
+
+chatServer.start()
 
 const database = new PromiseDBAO(config.mysql)
-const core = new SocketCore(httpServer.server)
+const core = new SocketCore(chatServer.server)
 
 core.onConnection((client) => {
 	console.log(`CLIENT_CONNECTED id: ${client.id}`)
 
-	core.addClient(new SocketClient(client))
+	Clients.addClient(new SocketClient(client))
 
-	new ChatEndpoint(core, client, database, config)
+	new ChatEndpoint(core, client, database, config.chatServer.accesskey, config.laravel)
 
 	client.on('disconnect', () => {
 		console.log(`CLIENT_DISCONNECTED id: ${client.id}`)
 
-		core.removeClient(client)
+		Clients.removeClient(client)
 	})
 })
 

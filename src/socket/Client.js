@@ -1,4 +1,4 @@
-class SocketClient {
+class Client {
     constructor(socket) {
         this._userId = null
         this._socket = socket
@@ -61,4 +61,4 @@ class SocketClient {
     }
 }
 
-module.exports = SocketClient
+module.exports = Client

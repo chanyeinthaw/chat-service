@@ -34,7 +34,7 @@ class HTTPServer {
 
     start() {
         let ports = this._config.port
-        let port = port.secure
+        let port = ports.secure
         let unsecurePort = ports.unsecure
         let host = this._config.host
 

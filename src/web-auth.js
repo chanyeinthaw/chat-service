@@ -1,7 +1,7 @@
 const request = require('sync-request');
 
 module.exports = function(sessionId, config) {
-    let authURL = `http://${config.laravel.host}:${config.laravel.port}/api/io-auth`;
+    let authURL = `http://${config.host}:${config.port}/api/io-auth`;
     let requestMethod = 'GET';
 
 	let res = request(requestMethod, `${authURL}?session_id=${sessionId}`);
