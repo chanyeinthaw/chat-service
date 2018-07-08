@@ -24,7 +24,7 @@ class ClientRepository {
     }
 
     static getInstance() {
-        return ClientRepository.instance ? ClientRepository.instance : new SocketClientRepository()
+        return ClientRepository.instance ? ClientRepository.instance : new ClientRepository()
     }
 }
 
