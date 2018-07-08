@@ -23,6 +23,18 @@
     "port" : {
       "secure": 8443,
       "unsecure": 8080
+    },
+    "rooms": {
+      "/* maxClients */": "/* maximum number of clients per room. 0 = no limit */",
+      "maxClients": 0
+    },
+    "xirsys": {
+      "gateway": "global.xirsys.net",
+      "info": {
+        "ident": "kokoayeminoo",
+        "secret": "b180ef38-7c94-11e8-9c56-c7092173fc20",
+        "channel": "bizlaw"
+      }
     }
   },
 
