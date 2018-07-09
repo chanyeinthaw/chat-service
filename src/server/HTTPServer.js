@@ -57,8 +57,12 @@ class HTTPServer {
         console.log(`HTTPS Server Started ${host ? host : ':'}:${this._config.secure ? port : unsecurePort}`)
     }
 
-    get server() {
-        return this._config.secure ? this._secureServer : this._unSecureServer
+    get serverSecure() {
+        return this._secureServer
+    }
+
+    get serverUnsecure() {
+        return this._unSecureServer
     }
 
     set serverErrorHandler (value) {

@@ -22,21 +22,25 @@ chatServer.serverErrorHandler = serverErrorHandler
 chatServer.start()
 
 const database = new PromiseDBAO(config.mysql)
-const core = new SocketCore(chatServer.server)
+const core = new SocketCore(chatServer.serverSecure)
+const coreUnsecure = new SocketCore(chatServer.serverUnsecure)
 
-core.onConnection((client) => {
-	console.log(`CLIENT_CONNECTED id: ${client.id}`)
+function onConnection(client) {
+    console.log(`CLIENT_CONNECTED id: ${client.id}`)
 
-	Clients.addClient(new SocketClient(client))
+    Clients.addClient(new SocketClient(client))
 
-	new ChatEndpoint(core, client, database, config.chatServer.accessKey, config.laravel)
+    new ChatEndpoint(this, client, database, config.chatServer.accessKey, config.laravel)
 
-	client.on('disconnect', () => {
-		console.log(`CLIENT_DISCONNECTED id: ${client.id}`)
+    client.on('disconnect', () => {
+        console.log(`CLIENT_DISCONNECTED id: ${client.id}`)
 
-		Clients.removeClient(client)
-	})
-})
+        Clients.removeClient(client)
+    })
+}
+
+core.onConnection(onConnection.bind(core))
+coreUnsecure.onConnection(onConnection.bind(coreUnsecure))
 
 process.on('unhandledRejection', error => {
     console.log('UnhandledRejection', error.code ,error.message)
