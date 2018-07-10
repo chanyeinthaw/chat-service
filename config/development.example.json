@@ -17,6 +17,15 @@
     }
   },
 
+  "vchatServer" : {
+    "secure": true,
+    "host": "",
+    "port": {
+      "secure": 111,
+      "unsecure": 112
+    }
+  },
+
   "signalingServer": {
     "secure": true,
     "host": "",
