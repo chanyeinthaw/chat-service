@@ -49,6 +49,19 @@ class SocketCore {
     getNumberOfClientsInRoom(name) {
         return this._server.sockets.clients(name).length
     }
+
+    static initSockets(server, isSecure, connectionHandler) {
+        let secureSocket = null
+        let unsecureSocket = null
+
+        if (isSecure) {
+            secureSocket = new SocketCore(server.serverSecure)
+            secureSocket.onConnection(connectionHandler.bind(secureSocket))
+        }
+
+        unsecureSocket = new SocketCore(server.serverUnsecure)
+        unsecureSocket.onConnection(connectionHandler.bind(unsecureSocket))
+    }
 }
 
 module.exports = SocketCore
