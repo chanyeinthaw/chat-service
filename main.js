@@ -12,6 +12,7 @@ const app = require('express')()
 const ssl = config.ssl
 
 const chatServer = new HTTPServer(app, config.chatServer, ssl)
+const vchatServer = new HTTPServer(app, config.vchatServer, ssl)
 // const signalingServer = new HTTPServer(app, config.signalingServer, ssl)
 
 function serverErrorHandler(err) {
@@ -19,20 +20,19 @@ function serverErrorHandler(err) {
 }
 
 chatServer.serverErrorHandler = serverErrorHandler
+vchatServer.serverErrorHandler = serverErrorHandler
 
+vchatServer.start()
 chatServer.start()
 
 const database = new PromiseDBAO(config.mysql)
-const core = new SocketCore(chatServer.serverSecure)
-const coreUnsecure = new SocketCore(chatServer.serverUnsecure)
 
-function onConnection(client) {
+function onChatConnection(client) {
     console.log(`CLIENT_CONNECTED id: ${client.id}`)
 
     Clients.addClient(new SocketClient(client))
 
     let chatEP = new ChatEndpoint(this, client, database, config.chatServer.accessKey, config.laravel)
-    new VChatEndpoint(this, client)
 
     chatEP.postAuthHandler = () => {
         // new VChatEndpoint(this, client)
@@ -45,8 +45,10 @@ function onConnection(client) {
     })
 }
 
-core.onConnection(onConnection.bind(core))
-coreUnsecure.onConnection(onConnection.bind(coreUnsecure))
+SocketCore.initSockets(chatServer, config.chatServer.secure, onChatConnection)
+SocketCore.initSockets(vchatServer, config.vchatServer.second, function(client) {
+    new VChatEndpoint(this, client)
+})
 
 process.on('unhandledRejection', error => {
     console.log('UnhandledRejection', error.code ,error.message)
