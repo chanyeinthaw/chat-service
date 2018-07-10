@@ -16,6 +16,10 @@ class ChatEndpoint {
         this.emitAuthRequest()
     }
 
+    set postAuthHandler(cb) {
+        this._postAuth = cb
+    }
+
     //region StatusEmits
     emit400() {
         console.log(`ERROR_400 id: ${this._client.id}, ip: ${this._client.handshake.address}`)
@@ -152,6 +156,9 @@ class ChatEndpoint {
         if (res.hasOwnProperty('success') && res.success === true) {
             client.userId = res.userId
             client.authorize()
+
+            if (typeof this._postAuth === 'function')
+                this._postAuth()
 
             let conversations = null
 
