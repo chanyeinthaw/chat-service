@@ -4,6 +4,7 @@ const SocketClient = require('./src/socket/Client')
 const Clients = require('./src/socket/ClientRepository')
 const PromiseDBAO = require('./src/database/PromiseDBAO')
 const HTTPServer = require('./src/server/HTTPServer')
+const VChatEndpoint = require('./src/chat/VChatEndpont')
 // const SignalingServer = require('./src/webrtc/SignalingServer')
 
 const config = require('getconfig')
@@ -30,7 +31,12 @@ function onConnection(client) {
 
     Clients.addClient(new SocketClient(client))
 
-    new ChatEndpoint(this, client, database, config.chatServer.accessKey, config.laravel)
+    let chatEP = new ChatEndpoint(this, client, database, config.chatServer.accessKey, config.laravel)
+    new VChatEndpoint(this, client)
+
+    chatEP.postAuthHandler = () => {
+        // new VChatEndpoint(this, client)
+    }
 
     client.on('disconnect', () => {
         console.log(`CLIENT_DISCONNECTED id: ${client.id}`)
