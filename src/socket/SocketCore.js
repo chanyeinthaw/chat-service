@@ -47,7 +47,8 @@ class SocketCore {
     }
 
     getNumberOfClientsInRoom(name) {
-        return this._server.sockets.clients(name).length
+        let clients = this._server.sockets.adapter.rooms[name]
+        return clients ? clients.length : 0
     }
 
     static initSockets(server, isSecure, connectionHandler) {
