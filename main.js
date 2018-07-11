@@ -44,10 +44,14 @@ function onChatConnection(client) {
     })
 }
 
-SocketCore.initSockets(chatServer, config.chatServer.secure, onChatConnection)
-SocketCore.initSockets(signalingServer, config.signalingServer.secure, function(client) {
+function onSignalingServerConnection(client) {
+    console.log(`SIGNALING_SERVER clientID: ${client.id}`)
+
     new SignalingServer(this, client, config.signalingServer)
-})
+}
+
+SocketCore.initSockets(chatServer, config.chatServer.secure, onChatConnection)
+SocketCore.initSockets(signalingServer, config.signalingServer.secure, onSignalingServerConnection)
 
 process.on('unhandledRejection', error => {
     console.log('UnhandledRejection', error.code ,error.message)
