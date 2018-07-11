@@ -40,27 +40,16 @@ class SignalingServer {
         this.registerEvents()
     }
 
-    joinRoom(name) {
-        if (!this._rooms.hasOwnProperty(name)) {
-            this._rooms[name] = []
-        }
+    log () {
+        let msgs = ['Log Msg']
+        msgs.push.apply(msgs, arguments)
 
-        this._client.resources.room = name
-        this._client.join(name)
-        this._rooms[name].push(this._client.id)
-    }
-
-    leaveRoom(name) {
-        if (this._rooms.hasOwnProperty(name)) {
-            let index = this._rooms[name].indexOf(this._client.id)
-
-            this._rooms[name].splice(index, 1)
-            this._client.leave(name, () => {})
-        }
+        console.log('log', msgs)
+        this._client.emit('log', msgs)
     }
 
     getNoClientsInRoom(name) {
-        return this._rooms.hasOwnProperty(name) ? this._rooms[name].length : 0
+        return this._rooms[name] ? this._rooms[name].length : 0
     }
 
     requestIce() {
@@ -114,22 +103,33 @@ class SignalingServer {
     }
 
     onMessage(details) {
+        this.log('Client onMessage: ' , details)
+
         this._server.broadcastToRoom(this._client.resources.room, EVENTS.emit.message, details)
     }
 
     onCreateOrJoin(room) {
-        let numClients = this.getNoClientsInRoom(room)
+        this.log('Client onCreateOrJoin: ', room)
+
+        let numClients = this._server.getNumberOfClientsInRoom(room)
+
+        this.log('Room numClients: ', numClients)
 
         if (numClients === 0) {
-            this.joinRoom(room)
+            this._client.resources.room = room
+            this._client.join(room)
+            // this._rooms[name].push(this._client.id)
 
+            this.log('Client roomCreated: ' + this._client.id, ' Room: ', room)
             this._client.emit(EVENTS.emit.created, room, this._client.id)
         } else  {
             if (numClients >= this._config.rooms.maxClients) {
                 this._client.emit(EVENTS.emit.full, room)
             } else {
-                this.joinRoom(name)
+                this._client.resources.room = room
+                this._client.join(room)
 
+                this.log('Client roomJoined: ' + this._client.id, ' Room: ', room)
                 this._client.emit(EVENTS.emit.joined, room, this._client.id)
                 this._server.broadcastToRoom(room, EVENTS.emit.ready, {})
             }
@@ -137,7 +137,7 @@ class SignalingServer {
     }
 
     onBye(name) {
-        this.leaveRoom(name)
+        this._client.leave(name, () => {})
     }
 
     onIpAddress() {
