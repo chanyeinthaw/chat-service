@@ -1,5 +1,26 @@
 const uuid = require('node-uuid')
+const os = require('os')
 const https = require('https')
+
+const EVENTS = {
+    receive: {
+        onMessage: 'message',
+        onCreateOrJoin: 'create or join',
+        onIpAddress: 'ipaddr',
+        onBye: 'bye'
+    },
+
+    emit: {
+        message: 'message',
+        log: 'log',
+        created: 'created',
+        join: 'join',
+        joined: 'joined',
+        full: 'full',
+        ipAddr: 'ipaddr',
+        ready: 'ready'
+    }
+}
 
 class SignalingServer {
     constructor(server, client, config) {
@@ -7,13 +28,39 @@ class SignalingServer {
         this._client = client
         this._config = config
 
+        this._rooms = {}
+
         this._client.resources = {
             screen: false,
             video: true,
-            audio: false
+            audio: false,
+            room: ''
         }
 
         this.registerEvents()
+    }
+
+    joinRoom(name) {
+        if (!this._rooms.hasOwnProperty(name)) {
+            this._rooms[name] = []
+        }
+
+        this._client.resources.room = name
+        this._client.join(name)
+        this._rooms[name].push(this._client.id)
+    }
+
+    leaveRoom(name) {
+        if (this._rooms.hasOwnProperty(name)) {
+            let index = this._rooms[name].indexOf(this._client.id)
+
+            this._rooms[name].splice(index, 1)
+            this._client.leave(name, () => {})
+        }
+    }
+
+    getNoClientsInRoom(name) {
+        return this._rooms.hasOwnProperty(name) ? this._rooms[name].length : 0
     }
 
     requestIce() {
@@ -57,91 +104,53 @@ class SignalingServer {
     }
 
     registerEvents() {
-        this._client.on('message', this.onMessage.bind(this))
+        this._client.on(EVENTS.receive.onMessage, this.onMessage.bind(this))
 
-        this._client.on('join', this.onJoin.bind(this))
+        this._client.on(EVENTS.receive.onCreateOrJoin, this.onCreateOrJoin.bind(this))
 
-        this._client.on('create', this.onCreate.bind(this))
+        this._client.on(EVENTS.receive.onBye, this.onBye.bind(this))
 
-        this._client.on('leave', () => {
-            this.removeFeed()
-        })
-
-        this._client.on('trace', function (data) {
-            console.log('trace', JSON.stringify(
-                [data.type, data.session, data.prefix, data.peer, data.time, data.value]
-            ));
-        });
+        this._client.on(EVENTS.receive.onIpAddress, this.onIpAddress.bind(this))
     }
 
-    removeFeed() {
-        if (this._client.room) {
-            this._server.broadcastToRoom(this._client.room, 'remove', {
-                id: this._client.id,
-                type: type
-            })
-            if (!type) {
-                this._client.leave(this._client.room)
-                this._client.room = undefined
+    onMessage(details) {
+        this._server.broadcastToRoom(this._client.resources.room, EVENTS.emit.message, details)
+    }
+
+    onCreateOrJoin(room) {
+        let numClients = this.getNoClientsInRoom(room)
+
+        if (numClients === 0) {
+            this.joinRoom(room)
+
+            this._client.emit(EVENTS.emit.created, room, this._client.id)
+        } else  {
+            if (numClients >= this._config.rooms.maxClients) {
+                this._client.emit(EVENTS.emit.full, room)
+            } else {
+                this.joinRoom(name)
+
+                this._client.emit(EVENTS.emit.joined, room, this._client.id)
+                this._server.broadcastToRoom(room, EVENTS.emit.ready, {})
             }
         }
     }
 
-    describeRoom(name) {
-        let adapter = this._server.nsps['/'].adapter
-        let clients = adapter.rooms[name] || {}
-        let result = {
-            clients: {}
-        }
-        Object.keys(clients).forEach(function (id) {
-            result.clients[id] = adapter.nsp.connected[id].resources
-        })
-        return result
+    onBye(name) {
+        this.leaveRoom(name)
     }
 
-    onMessage(details) {
-        if (!details) return
+    onIpAddress() {
+        let ifaces = os.networkInterfaces()
 
-        let otherClient = this._server.to(details.to)
-
-        if (!otherClient) return
-
-        details.from =  this._client.id
-        otherClient.emit('message', details)
-    }
-
-    onJoin(name, callback) {
-        if (typeof name !== 'string') return
-        if (this._config.rooms && this._config.rooms.maxClients > 0 &&
-            this._server.getNumberOfClientsInRoom(name) >= this._config.rooms.maxClients) {
-            safeCb(callback)('full')
-            return
-        }
-        this.removeFeed()
-        safeCb(callback)(null, this.describeRoom(name))
-        this._client.join(name)
-        this._client.room = name
-    }
-
-    onCreate(name, cb) {
-        if (arguments.length === 2) {
-            cb = safeCb(cb)
-            name = name || uuid();
-        } else {
-            cb = name;
-            name = uuid();
-        }
-
-        let room = this._server.nsps['/'].adapter.rooms[name];
-        if (room && room.length) {
-            safeCb(cb)('taken');
-        } else {
-            this.onJoin(name);
-            safeCb(cb)(null, name);
+        for (let dev in ifaces) {
+            ifaces[dev].forEach((details) => {
+                if (details.family === 'IPv4' && details.address !== '127.0.0.1') {
+                    this._server.emit(EVENTS.emit.ipAddr, details.address)
+                }
+            })
         }
     }
 }
-
-const safeCb = (cb) => typeof cb === 'function' ? cb : function() {};
 
 module.exports = SignalingServer

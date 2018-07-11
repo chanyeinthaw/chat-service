@@ -4,14 +4,14 @@ const SocketClient = require('./src/socket/Client')
 const Clients = require('./src/socket/ClientRepository')
 const PromiseDBAO = require('./src/database/PromiseDBAO')
 const HTTPServer = require('./src/server/HTTPServer')
-// const SignalingServer = require('./src/webrtc/SignalingServer')
+const SignalingServer = require('./src/webrtc/SignalingServer')
 
 const config = require('getconfig')
 const app = require('express')()
 const ssl = config.ssl
 
 const chatServer = new HTTPServer(app, config.chatServer, ssl)
-// const signalingServer = new HTTPServer(app, config.signalingServer, ssl)
+const signalingServer = new HTTPServer(app, config.signalingServer, ssl)
 
 function serverErrorHandler(err) {
     if (err) throw err
@@ -19,6 +19,10 @@ function serverErrorHandler(err) {
 
 chatServer.serverErrorHandler = serverErrorHandler
 chatServer.start()
+
+signalingServer.serverErrorHandler = serverErrorHandler
+signalingServer.start()
+
 
 const database = new PromiseDBAO(config.mysql)
 
@@ -41,6 +45,9 @@ function onChatConnection(client) {
 }
 
 SocketCore.initSockets(chatServer, config.chatServer.secure, onChatConnection)
+SocketCore.initSockets(signalingServer, config.signalingServer.secure, function(client) {
+    new SignalingServer(this, client, config.signalingServer)
+})
 
 process.on('unhandledRejection', error => {
     console.log('UnhandledRejection', error.code ,error.message)
