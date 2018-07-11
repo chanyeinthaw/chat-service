@@ -48,10 +48,6 @@ class SignalingServer {
         this._client.emit('log', msgs)
     }
 
-    getNoClientsInRoom(name) {
-        return this._rooms[name] ? this._rooms[name].length : 0
-    }
-
     requestIce() {
         let xirsys = this._config.xirsys
         let options = {
@@ -104,6 +100,7 @@ class SignalingServer {
 
     onMessage(details) {
         this.log('Client onMessage: ' , details)
+        console.log(`Clienet message: ${details}`)
 
         this._server.broadcastToRoom(this._client.resources.room, EVENTS.emit.message, details)
     }
