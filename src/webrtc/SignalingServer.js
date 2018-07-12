@@ -123,7 +123,7 @@ class SignalingServer {
         })
 
         this._client.on('disconnect', () => {
-            console.log(`Signaling Client disconnected from ${this._client.res.room}`)
+            console.log(`Signaling Client disconnected from ${this._client.resources.room}`)
 
             this._server.broadcastToRoom(this._client.resources.room, 'bye')
         })
