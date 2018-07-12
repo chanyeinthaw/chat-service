@@ -126,7 +126,7 @@ class SignalingServer {
             console.log(`Signaling client ${JSON.stringify(this._client.resources)}`)
             console.log(`Signaling Client disconnected from ${this._client.resources.room}`)
 
-            this._server.broadcast(this._client.resources.room, 'bye')
+            this._server.broadcastToRoom(this._client.resources.room, EVENTS.emit.message , 'bye')
         })
     }
 
