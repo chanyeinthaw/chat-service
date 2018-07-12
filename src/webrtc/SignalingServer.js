@@ -24,13 +24,14 @@ const EVENTS = {
     }
 }
 
+let admins = []
+
 class SignalingServer {
     constructor(server, client, config) {
         this._server = server
         this._client = client
         this._config = config
 
-        this._admins = []
 
         this._client.resources = {
             screen: false,
@@ -100,20 +101,20 @@ class SignalingServer {
                 available: available
             }
 
-            this._admins.push(info)
+            admins.push(info)
 
             console.log(`Push ${info}`)
-            console.log(`Admins: ${JSON.stringify(this._admins)}`)
+            console.log(`Admins: ${JSON.stringify(admins)}`)
 
             this._server.broadcast(EVENTS.receive.adminList, info)
         })
 
         this._client.on('available', () => {
             console.log(`Admin available`)
-            for(let i in this._admins) {
-                let admin = this._admins[i]
+            for(let i in admins) {
+                let admin = admins[i]
                 if (admin.id === this._client.id) {
-                    this._admins[i].available = true
+                    admins[i].available = true
 
                     this._server.broadcast(EVENTS.receive.adminList, {
                         id: this._client.id,
@@ -133,10 +134,10 @@ class SignalingServer {
 
         this._client.on(EVENTS.receive.callAnswered, (data) => {
             console.log(`Admin call answered`)
-            for(let i in this._admins) {
-                let admin = this._admins[i]
+            for(let i in admins) {
+                let admin = admins[i]
                 if (admin.id === this._client.id) {
-                    this._admins[i].available = false
+                    admins.available = false
 
                     this._server.broadcast(EVENTS.receive.adminList, {
                         id: this._client.id,
@@ -147,7 +148,7 @@ class SignalingServer {
         })
 
         this._client.on(EVENTS.receive.incomingCall, (data) => {
-            for(let admin of this._admins) {
+            for(let admin of admins) {
                 if (admin.available === true) {
                     console.log(`Sending call to ${admin.id}`)
                     this._server.server.to(admin.id).emit(EVENTS.receive.incomingCall, data)
@@ -158,6 +159,18 @@ class SignalingServer {
         this._client.on('disconnect', () => {
             console.log(`Signaling client ${JSON.stringify(this._client.resources)}`)
             console.log(`Signaling Client disconnected from ${this._client.resources.room}`)
+
+            for(let i in admins) {
+                let admin = admins[i]
+                if (admin.id === this._client.id) {
+                    admins.available = false
+
+                    this._server.broadcast(EVENTS.receive.adminList, {
+                        id: this._client.id,
+                        available: false
+                    })
+                }
+            }
 
             this._server.broadcastToRoom(this._client.resources.room, EVENTS.emit.message , 'bye')
         })
