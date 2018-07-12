@@ -7,7 +7,10 @@ const EVENTS = {
         onMessage: 'message',
         onCreateOrJoin: 'create or join',
         onIpAddress: 'ipaddr',
-        onBye: 'bye'
+        onBye: 'bye',
+        adminList: 'adminList',
+        incomingCall: 'incomingCall',
+        callAnswered: 'callAswered'
     },
 
     emit: {
@@ -28,13 +31,14 @@ class SignalingServer {
         this._client = client
         this._config = config
 
-        this._rooms = {}
+        this._admins = []
 
         this._client.resources = {
             screen: false,
             video: true,
             audio: false,
-            room: ''
+            room: '',
+            available: true
         }
 
         this.registerEvents()
@@ -91,6 +95,11 @@ class SignalingServer {
     }
 
     registerEvents() {
+        this._server.broadcast(EVENTS.receive.adminList, {
+            adminId: this._client.id,
+            available: this._client.resources.available
+        })
+
         this._client.on(EVENTS.receive.onMessage, this.onMessage.bind(this))
 
         this._client.on(EVENTS.receive.onCreateOrJoin, this.onCreateOrJoin.bind(this))
@@ -98,6 +107,21 @@ class SignalingServer {
         this._client.on(EVENTS.receive.onBye, this.onBye.bind(this))
 
         this._client.on(EVENTS.receive.onIpAddress, this.onIpAddress.bind(this))
+
+        this._client.on(EVENTS.receive.callAnswered, (data) => {
+            this._client.resources.available = false
+
+            this._server.broadcast(EVENTS.receive.adminList, {
+                adminId: this._client.id,
+                available: this._client.resources.available
+            })
+
+            this._server.broadcast(EVENTS.receive.callAnswered, data)
+        })
+
+        this._client.on(EVENTS.receive.incomingCall, (data) => {
+            this._server.broadcast(EVENTS.receive.incomingCall, data)
+        })
     }
 
     onMessage(details) {
