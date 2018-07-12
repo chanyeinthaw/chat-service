@@ -5,7 +5,7 @@ const https = require('https')
 const EVENTS = {
     receive: {
         onMessage: 'message',
-        onCreateOrJoin: 'create or join',
+        onCreateOrJoin: 'join',
         onIpAddress: 'ipaddr',
         onBye: 'bye',
         adminList: 'adminList',
@@ -16,9 +16,8 @@ const EVENTS = {
     emit: {
         message: 'message',
         log: 'log',
-        created: 'created',
-        join: 'join',
         joined: 'joined',
+        created: 'created',
         full: 'full',
         ipAddr: 'ipaddr',
         ready: 'ready'
