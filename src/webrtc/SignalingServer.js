@@ -154,6 +154,7 @@ class SignalingServer {
 
                 this.log('Client roomJoined: ' + this._client.id, ' Room: ', room)
                 this._client.emit(EVENTS.emit.join, room, this._client.id)
+                this._server.broadcastToRoom(EVENTS.emit.joined, room)
                 this._server.broadcastToRoom(room, EVENTS.emit.ready, {})
             }
         }
