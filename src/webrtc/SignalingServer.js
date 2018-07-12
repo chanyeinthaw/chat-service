@@ -122,6 +122,10 @@ class SignalingServer {
         this._client.on(EVENTS.receive.incomingCall, (data) => {
             this._server.broadcast(EVENTS.receive.incomingCall, data)
         })
+
+        this._client.on('disconnect', () => {
+            this._server.broadcastToRoom(this._client.resources.room, 'bye')
+        })
     }
 
     onMessage(details) {
