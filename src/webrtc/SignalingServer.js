@@ -149,7 +149,7 @@ class SignalingServer {
             this._client.join(room)
             // this._rooms[name].push(this._client.id)
 
-            this.log('Client roomCreated: ' + this._client.id, ' Room: ', room)
+            this.log('Client roomCreated: ' + this._client.id, ' Room: ', room, ' Res: ', JSON.stringify(this._client.resources))
             this._client.emit(EVENTS.emit.created, room, this._client.id)
         } else  {
             if (numClients >= this._config.rooms.maxClients) {
