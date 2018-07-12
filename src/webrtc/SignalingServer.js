@@ -165,6 +165,8 @@ class SignalingServer {
 
     onBye(name) {
         this._client.leave(name, () => {})
+
+        this._server.broadcastToRoom(name, 'bye', name)
     }
 
     onIpAddress() {
