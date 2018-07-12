@@ -94,9 +94,33 @@ class SignalingServer {
     }
 
     registerEvents() {
-        this._server.broadcast(EVENTS.receive.adminList, {
-            adminId: this._client.id,
-            available: this._client.resources.available
+        this._client.on('admin', (available) => {
+            let info = {
+                id: this._client.id,
+                available: available
+            }
+
+            this._admins.push(info)
+
+            console.log(`Push ${info}`)
+            console.log(`Admins: ${JSON.stringify(this._admins)}`)
+
+            this._server.broadcast(EVENTS.receive.adminList, info)
+        })
+
+        this._client.on('available', () => {
+            console.log(`Admin available`)
+            for(let i in this._admins) {
+                let admin = this._admins[i]
+                if (admin.id === this._client.id) {
+                    this._admins[i].available = true
+
+                    this._server.broadcast(EVENTS.receive.adminList, {
+                        id: this._client.id,
+                        available: true
+                    })
+                }
+            }
         })
 
         this._client.on(EVENTS.receive.onMessage, this.onMessage.bind(this))
@@ -108,18 +132,27 @@ class SignalingServer {
         this._client.on(EVENTS.receive.onIpAddress, this.onIpAddress.bind(this))
 
         this._client.on(EVENTS.receive.callAnswered, (data) => {
-            this._client.resources.available = false
+            console.log(`Admin call answered`)
+            for(let i in this._admins) {
+                let admin = this._admins[i]
+                if (admin.id === this._client.id) {
+                    this._admins[i].available = false
 
-            this._server.broadcast(EVENTS.receive.adminList, {
-                adminId: this._client.id,
-                available: this._client.resources.available
-            })
-
-            this._server.broadcast(EVENTS.receive.callAnswered, data)
+                    this._server.broadcast(EVENTS.receive.adminList, {
+                        id: this._client.id,
+                        available: false
+                    })
+                }
+            }
         })
 
         this._client.on(EVENTS.receive.incomingCall, (data) => {
-            this._server.broadcast(EVENTS.receive.incomingCall, data)
+            for(let admin of this._admins) {
+                if (admin.available === true) {
+                    console.log(`Sending call to ${admin.id}`)
+                    this._server.server.to(admin.id).emit(EVENTS.receive.incomingCall, data)
+                }
+            }
         })
 
         this._client.on('disconnect', () => {
