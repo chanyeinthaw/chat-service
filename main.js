@@ -47,7 +47,8 @@ function onChatConnection(client) {
 function onSignalingServerConnection(client) {
     console.log(`SIGNALING_SERVER clientID: ${client.id}`)
 
-    new SignalingServer(this, client, config.signalingServer)
+    let sig = new SignalingServer(this, client, config.signalingServer)
+    sig.requestIce()
 }
 
 SocketCore.initSockets(chatServer, config.chatServer.secure, onChatConnection)

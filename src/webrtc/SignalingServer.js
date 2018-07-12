@@ -73,15 +73,17 @@ class SignalingServer {
                 let iceServers = result.v.iceServers
                 let turnservers = [],
                     stunservers = [];
-                iceServers.forEach( (server) => {
-                    if(server.url.indexOf("stun:") !== -1){
-                        stunservers.push(server);
-                    }else{
-                        turnservers.push(server);
-                    }
-                })
-                this._client.emit('stunservers', stunservers || []);
-                this._client.emit('turnservers', turnservers);
+                // iceServers.forEach( (server) => {
+                //     if(server.url.indexOf("stun:") !== -1){
+                //         stunservers.push(server);
+                //     }else{
+                //         turnservers.push(server);
+                //     }
+                // })
+                // this._client.emit('stunservers', stunservers || []);
+                // this._client.emit('turnservers', turnservers);
+
+                this._client.emit('iceCandidates', iceServers)
             })
         })
 
