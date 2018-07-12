@@ -143,15 +143,21 @@ class SignalingServer {
                         id: this._client.id,
                         available: false
                     })
+
+                    break;
                 }
             }
         })
 
         this._client.on(EVENTS.receive.incomingCall, (data) => {
+            console.log(`Admins: ${admins}`)
+
             for(let admin of admins) {
                 if (admin.available === true) {
                     console.log(`Sending call to ${admin.id}`)
                     this._server.server.to(admin.id).emit(EVENTS.receive.incomingCall, data)
+
+                    break;
                 }
             }
         })
@@ -169,6 +175,10 @@ class SignalingServer {
                         id: this._client.id,
                         available: false
                     })
+
+                    admins.splice(i, 1)
+
+                    break;
                 }
             }
 
