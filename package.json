@@ -32,5 +32,8 @@
     "socket.io": "^2.1.0",
     "sync-request": "^6.0.0",
     "yetify": "^0.1.0"
+  },
+  "devDependencies": {
+    "socket.io-client": "^2.1.1"
   }
 }
