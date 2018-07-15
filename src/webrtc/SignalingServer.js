@@ -94,11 +94,6 @@ class SignalingServer {
     }
 
     registerEvents() {
-        this._server.broadcast(EVENTS.receive.adminList, {
-            adminId: this._client.id,
-            available: this._client.resources.available
-        })
-
         this._client.on(EVENTS.receive.onMessage, this.onMessage.bind(this))
 
         this._client.on(EVENTS.receive.onCreateOrJoin, this.onCreateOrJoin.bind(this))
@@ -107,26 +102,11 @@ class SignalingServer {
 
         this._client.on(EVENTS.receive.onIpAddress, this.onIpAddress.bind(this))
 
-        this._client.on(EVENTS.receive.callAnswered, (data) => {
-            this._client.resources.available = false
-
-            this._server.broadcast(EVENTS.receive.adminList, {
-                adminId: this._client.id,
-                available: this._client.resources.available
-            })
-
-            this._server.broadcast(EVENTS.receive.callAnswered, data)
-        })
-
-        this._client.on(EVENTS.receive.incomingCall, (data) => {
-            this._server.broadcast(EVENTS.receive.incomingCall, data)
-        })
-
         this._client.on('disconnect', () => {
             console.log(`Signaling client ${JSON.stringify(this._client.resources)}`)
             console.log(`Signaling Client disconnected from ${this._client.resources.room}`)
 
-            this._server.broadcast(this._client.resources.room, 'bye')
+            this._server.broadcastToRoom(this._client.resources.room, 'message', 'bye')
         })
     }
 
@@ -144,26 +124,33 @@ class SignalingServer {
 
         this.log('Room numClients: ', numClients)
 
-        if (numClients === 0) {
+        if (numClients < this._config.rooms.maxClients) {
             this._client.resources.room = room
             this._client.join(room)
-            // this._rooms[name].push(this._client.id)
 
-            this.log('Client roomCreated: ' + this._client.id, ' Room: ', room, ' Res: ', JSON.stringify(this._client.resources))
-            this._client.emit(EVENTS.emit.created, room, this._client.id)
-        } else  {
-            if (numClients >= this._config.rooms.maxClients) {
-                this._client.emit(EVENTS.emit.full, room)
-            } else {
-                this._client.resources.room = room
-                this._client.join(room)
-
-                this.log('Client roomJoined: ' + this._client.id, ' Room: ', room)
-                this._client.emit(EVENTS.emit.joined, room, this._client.id)
-                // this._server.broadcastToRoom(EVENTS.emit.joined, room)
-                this._server.broadcastToRoom(room, EVENTS.emit.ready, {})
-            }
+            this._client.emit(EVENTS.emit.joined, room, this._client.id)
+            this._server.broadcastToRoom(room, EVENTS.emit.ready, {})
         }
+        // if (numClients === 0) {
+        //     this._client.resources.room = room
+        //     this._client.join(room)
+        //     // this._rooms[name].push(this._client.id)
+        //
+        //     this.log('Client roomCreated: ' + this._client.id, ' Room: ', room, ' Res: ', JSON.stringify(this._client.resources))
+        //     this._client.emit(EVENTS.emit.created, room, this._client.id)
+        // } else  {
+        //     if (numClients >= this._config.rooms.maxClients) {
+        //         this._client.emit(EVENTS.emit.full, room)
+        //     } else {
+        //         this._client.resources.room = room
+        //         this._client.join(room)
+        //
+        //         this.log('Client roomJoined: ' + this._client.id, ' Room: ', room)
+        //         this._client.emit(EVENTS.emit.joined, room, this._client.id)
+        //         // this._server.broadcastToRoom(EVENTS.emit.joined, room)
+        //         this._server.broadcastToRoom(room, EVENTS.emit.ready, {})
+        //     }
+        // }
     }
 
     onBye(name) {
