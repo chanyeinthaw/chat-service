@@ -24,11 +24,15 @@ class CallHandlingEP {
 
     getAvailableOperator() {
         let availableAdmin = this.ServiceREPO.admins.pop()
+
+        if (!availableAdmin) return null
+
         let mapId = this.ServiceREPO.adminsMap.indexOf(availableAdmin.id)
 
         this.ServiceREPO.adminsMap.splice(mapId, 1)
 
         return availableAdmin
+
     }
 
     onAvailabilityRequest() {
