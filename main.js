@@ -29,8 +29,6 @@ signalingServer.start()
 
 const database = new PromiseDBAO(config.mysql)
 
-SocketCore.initSockets(chatServer, config.chatServer.secure, onChatConnection)
-
 webRTCService(signalingServer, config.signalingServer)
 chatService(chatServer, database, config.chatServer, config.laravel)
 
