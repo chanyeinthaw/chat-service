@@ -6,6 +6,9 @@ const PromiseDBAO = require('./src/database/PromiseDBAO')
 const HTTPServer = require('./src/server/HTTPServer')
 const SignalingServer = require('./src/webrtc/SignalingServer')
 
+const webRTCService = require('./src/webrtc/service')
+const chatService = require('./src/chat/service')
+
 const config = require('getconfig')
 const app = require('express')()
 const ssl = config.ssl
@@ -26,33 +29,10 @@ signalingServer.start()
 
 const database = new PromiseDBAO(config.mysql)
 
-function onChatConnection(client) {
-    console.log(`CLIENT_CONNECTED id: ${client.id}`)
-
-    Clients.addClient(new SocketClient(client))
-
-    let chatEP = new ChatEndpoint(this, client, database, config.chatServer.accessKey, config.laravel)
-
-    chatEP.postAuthHandler = () => {
-        // new VChatEndpoint(this, client)
-    }
-
-    client.on('disconnect', () => {
-        console.log(`CLIENT_DISCONNECTED id: ${client.id}`)
-
-        Clients.removeClient(client)
-    })
-}
-
-function onSignalingServerConnection(client) {
-    console.log(`SIGNALING_SERVER clientID: ${client.id}`)
-
-    let sig = new SignalingServer(this, client, config.signalingServer)
-    sig.requestIce()
-}
-
 SocketCore.initSockets(chatServer, config.chatServer.secure, onChatConnection)
-SocketCore.initSockets(signalingServer, config.signalingServer.secure, onSignalingServerConnection)
+
+webRTCService(signalingServer, config.signalingServer)
+chatService(chatServer, database, config.chatServer, config.laravel)
 
 process.on('unhandledRejection', error => {
     console.log('UnhandledRejection', error.code ,error.message)
