@@ -43,6 +43,7 @@ class CallHandlingEP {
     onFreeUP() {
         if (this.ServiceREPO.admins.indexOf(this._client.id) < 0) {
             this.ServiceREPO.admins.push(this._client.id)
+            this.updateAvailabilityResponse()
         }
     }
 
