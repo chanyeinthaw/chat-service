@@ -23,10 +23,14 @@ class CallHandlingEP {
         this._client = client
     }
 
-    updateAvailabilityResponse() {
-        this._client.emit(EMIT.availabilityResponse, {
+    updateAvailabilityResponse(client) {
+        let data = {
             freeOperatorCount: this.ServiceREPO.admins.length
-        })
+        }
+
+        if (!client)
+            this.server.broadcast(EMIT.availabilityResponse, data)
+        else client.emit(EMIT.availabilityResponse, data)
     }
 
     getAvailableOperator() {
@@ -37,7 +41,7 @@ class CallHandlingEP {
     }
 
     onAvailabilityRequest() {
-        this.updateAvailabilityResponse()
+        this.updateAvailabilityResponse(this._client)
     }
 
     onFreeUP() {
