@@ -18,7 +18,7 @@ module.exports = (httpServer, config) => {
     SocketCore.initSockets(httpServer, config.secure, function (client) {
 
         let sig = new SignalingServer(this, client, config)
-        let call = new CallHandlingEP(client, ServiceREPO)
+        let call = new CallHandlingEP(this, client, ServiceREPO)
 
         sig.requestIce()
 
