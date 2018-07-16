@@ -53,6 +53,7 @@ class CallHandlingEP {
 
     onSwitch(data) {
         let availableOperator = this.getAvailableOperator()
+        this.onFreeUP()
 
         if (!availableOperator) {
             let caller = this.ServiceREPO.callers[data.from]
@@ -67,8 +68,6 @@ class CallHandlingEP {
 
             return
         }
-
-        this.onFreeUP()
 
         availableOperator.emit(EMIT.incomingCall, data)
     }
