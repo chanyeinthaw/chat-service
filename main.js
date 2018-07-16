@@ -1,10 +1,5 @@
-const ChatEndpoint = require('./src/chat/ChatEndpoint')
-const SocketCore = require('./src/socket/SocketCore')
-const SocketClient = require('./src/socket/Client')
-const Clients = require('./src/socket/ClientRepository')
 const PromiseDBAO = require('./src/database/PromiseDBAO')
 const HTTPServer = require('./src/server/HTTPServer')
-const SignalingServer = require('./src/webrtc/SignalingServer')
 
 const webRTCService = require('./src/webrtc/service')
 const chatService = require('./src/chat/service')

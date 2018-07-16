@@ -1,5 +1,6 @@
 const SocketCore = require('../socket/SocketCore')
 const ChatEndpoint = require('./ChatEndpoint')
+const SocketClient = require('../socket/Client')
 const Clients = require('../socket/ClientRepository')
 
 module.exports = (httpServer, database, config, laravel) => {
