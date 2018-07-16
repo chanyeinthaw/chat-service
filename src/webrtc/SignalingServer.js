@@ -101,13 +101,6 @@ class SignalingServer {
         this._client.on(EVENTS.receive.onBye, this.onBye.bind(this))
 
         this._client.on(EVENTS.receive.onIpAddress, this.onIpAddress.bind(this))
-
-        this._client.on('disconnect', () => {
-            console.log(`Signaling client ${JSON.stringify(this._client.resources)}`)
-            console.log(`Signaling Client disconnected from ${this._client.resources.room}`)
-
-            this._server.broadcastToRoom(this._client.resources.room, 'message', 'bye')
-        })
     }
 
     onMessage(details) {

@@ -11,8 +11,9 @@ const EMIT = {
 }
 
 class CallHandlingEP {
-    constructor(client, ServiceREPO) {
+    constructor(server, client, ServiceREPO) {
         this.ServiceREPO = ServiceREPO
+        this.server = server
 
         client.on(ON.freeUP, this.onFreeUP.bind(this))
         client.on(ON.incomingCall, this.onIncomingCall.bind(this))
@@ -22,29 +23,26 @@ class CallHandlingEP {
         this._client = client
     }
 
-    getAvailableOperator() {
-        let availableAdmin = this.ServiceREPO.admins.pop()
-
-        if (!availableAdmin) return null
-
-        let mapId = this.ServiceREPO.adminsMap.indexOf(availableAdmin.id)
-
-        this.ServiceREPO.adminsMap.splice(mapId, 1)
-
-        return availableAdmin
-
-    }
-
-    onAvailabilityRequest() {
+    updateAvailabilityResponse() {
         this._client.emit(EMIT.availabilityResponse, {
             freeOperatorCount: this.ServiceREPO.admins.length
         })
     }
 
+    getAvailableOperator() {
+        let id = this.ServiceREPO.admins.pop()
+        let availableAdmin = this.server.getClientById(id)
+
+        return availableAdmin ? availableAdmin : null
+    }
+
+    onAvailabilityRequest() {
+        this.updateAvailabilityResponse()
+    }
+
     onFreeUP() {
-        if (this.ServiceREPO.adminsMap.indexOf(this._client.id) < 0) {
-            this.ServiceREPO.admins.push(this._client)
-            this.ServiceREPO.adminsMap.push(this._client.id)
+        if (this.ServiceREPO.admins.indexOf(this._client.id) < 0) {
+            this.ServiceREPO.admins.push(this._client.id)
         }
     }
 
@@ -95,6 +93,8 @@ class CallHandlingEP {
 
             availableAdmin.emit(EMIT.incomingCall, data)
         }
+
+        this.updateAvailabilityResponse()
     }
 }
 
