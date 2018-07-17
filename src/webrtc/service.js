@@ -18,11 +18,11 @@ module.exports = (httpServer, config) => {
 
     SocketCore.initSockets(httpServer, config.secure, function (client) {
 
-        let sign = new SignalingNextgen(this.server, client)
-        sign.requestIce(config)
+        // let sign = new SignalingNextgen(this.server, client)
+        // sign.requestIce(config)
 
-        // let sig = new SignalingServer(this, client, config)
-        // sig.requestIce()
+        let sig = new SignalingServer(this, client, config)
+        sig.requestIce()
 
         let call = new CallHandlingEP(this, client, ServiceREPO)
 
