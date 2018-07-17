@@ -48,12 +48,8 @@ class SignalingNextgen {
         client.on('publish', this.onPublish.bind(this))
     }
 
-    publish(channel, message) {
-        this.io.sockets.in(channel).emit('event', message)
-    }
-
     onPublish(data) {
-        this.publish(data.channel, data.message)
+        this.io.sockets.in(data.channel).emit('event', data)
     }
 
     onSubscribe(channel) {
