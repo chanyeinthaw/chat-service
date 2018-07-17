@@ -1,5 +1,6 @@
 const SocketCore = require('../socket/SocketCore')
 const SignalingServer = require('./SignalingServer')
+const SignalingNextgen = require('./SignalingNextgen')
 const CallHandlingEP = require('./CallHandlingEP')
 
 module.exports = (httpServer, config) => {
@@ -17,10 +18,13 @@ module.exports = (httpServer, config) => {
 
     SocketCore.initSockets(httpServer, config.secure, function (client) {
 
-        let sig = new SignalingServer(this, client, config)
-        let call = new CallHandlingEP(this, client, ServiceREPO)
+        let sign = new SignalingNextgen(this.server, client)
+        sign.requestIce(config)
 
-        sig.requestIce()
+        // let sig = new SignalingServer(this, client, config)
+        // sig.requestIce()
+
+        let call = new CallHandlingEP(this, client, ServiceREPO)
 
         client.on('disconnect', () => {
             let index = ServiceREPO.admins.indexOf(client.id)
