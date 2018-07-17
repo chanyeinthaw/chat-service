@@ -1,3 +1,6 @@
+const https = require('https')
+const os = require('os')
+
 class SignalingNextgen {
     constructor(io, client) {
         this.io = io
