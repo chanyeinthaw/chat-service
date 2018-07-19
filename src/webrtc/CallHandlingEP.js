@@ -78,7 +78,7 @@ class CallHandlingEP {
         availableOperator.emit(EMIT.incomingCall, data)
     }
 
-    onUserHangUp(id) {
+    onUserHangup(id) {
         let operator = this.server.getClientById(id)
 
         if (operator) operator.emit(EMIT.userHangUp)
