@@ -2,12 +2,15 @@ const ON = {
     incomingCall: 'incomingCall',
     freeUP: 'freeUP',
     availabilityRequest: 'availabilityRequest',
-    switch: 'switch'
+    switch: 'switch',
+    userHangUp: 'userHangUp'
 }
 
 const EMIT = {
     incomingCall: ON.incomingCall,
-    availabilityResponse: 'availabilityResponse'
+    availabilityResponse: 'availabilityResponse',
+    operator: 'operator',
+    userHangUp: ON.userHangUp
 }
 
 class CallHandlingEP {
@@ -19,6 +22,7 @@ class CallHandlingEP {
         client.on(ON.incomingCall, this.onIncomingCall.bind(this))
         client.on(ON.availabilityRequest, this.onAvailabilityRequest.bind(this))
         client.on(ON.switch, this.onSwitch.bind(this))
+        client.on(ON.userHangUp, this.onUserHangup.bind(this))
 
         this._client = client
     }
@@ -55,21 +59,29 @@ class CallHandlingEP {
         let availableOperator = this.getAvailableOperator()
         this.onFreeUP()
 
+        let caller = this.ServiceREPO.callers[data.from]
+        if (!caller) return
+
         if (!availableOperator) {
             let caller = this.ServiceREPO.callers[data.from]
 
-            if (caller) {
-                data.busy = true
+            data.busy = true
 
-                caller.emit(EMIT.incomingCall, data)
+            caller.emit(EMIT.incomingCall, data)
 
-                delete this.ServiceREPO.callers[data.from]
-            }
+            delete this.ServiceREPO.callers[data.from]
 
             return
         }
 
+        caller.emit(operator, availableOperator.id)
         availableOperator.emit(EMIT.incomingCall, data)
+    }
+
+    onUserHangUp(id) {
+        let operator = this.server.getClientById(id)
+
+        if (operator) operator.emit(EMIT.userHangUp)
     }
 
     onIncomingCall(data) {
@@ -95,6 +107,7 @@ class CallHandlingEP {
             data.from = this._client.id
             this.ServiceREPO.callers[data.from] = this._client
 
+            this._client.emit(EMIT.operator, availableAdmin.id)
             availableAdmin.emit(EMIT.incomingCall, data)
         }
 
